@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>📈 假突破 & 進場輔助系統｜BTC / ETH</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+/* ===========================================================
+   🎨 暖色系 Bootswatch 風格「精簡樣式」＋自訂 UI
+   - 字型優先使用 Microsoft JhengHei
+   - RWD 卡片式、活潑配色、按鈕操作為主
+   - 符合規範：*{box-sizing} 與 input/select/textarea max-width:100%
+   =========================================================== */
+*{ box-sizing:border-box; }
+input,select,textarea{ max-width:100%; }
+:root{
+  --brand-50:#fff7ed; --brand-100:#ffedd5; --brand-200:#fed7aa; --brand-300:#fdba74;
+  --brand-400:#fb923c; --brand-500:#f97316; --brand-600:#ea580c; --brand-700:#c2410c;
+  --text:#1f2937; --muted:#6b7280; --card:#fff; --bg:#fffaf5; --surface:#fff1e6;
+  --border:#f3e5d7; --ring:rgba(249,115,22,.35); --shadow:0 10px 24px rgba(0,0,0,.06);
+  --success:#16a34a; --danger:#dc2626; --info:#2563eb; --warn:#d97706;
+}
+html,body{ height:100%; background:var(--bg); color:var(--text); }
+body{
+  font-family:"Microsoft JhengHei","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  margin:0; line-height:1.5; display:flex; flex-direction:column;
+}
+.wrap{ width:min(1280px,96vw); margin:20px auto 60px; }
+.card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; box-shadow:var(--shadow); padding:16px;
+}
+.grid{ display:grid; gap:16px; grid-template-columns:1fr; }
+@media (min-width:1000px){ .grid{ grid-template-columns: 480px 1fr; } }
+
+header.hero{
+  background:linear-gradient(135deg,var(--brand-100),var(--surface));
+  border:1px solid var(--border); border-radius:22px; box-shadow:var(--shadow);
+  padding:20px; display:flex; gap:12px; align-items:center;
+}
+.hero .icon{ font-size:40px; color:var(--brand-600); filter:drop-shadow(0 6px 14px rgba(249,115,22,.25)); }
+.hero h1{ margin:0; font-size:clamp(22px,3.4vw,32px); display:flex; gap:8px; align-items:center; }
+.hero p{ margin:6px 0 0; color:var(--muted); font-size:14px; }
+
+label{ font-weight:700; font-size:13px; }
+input,select,textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--border);
+  border-radius:12px; outline:none; transition:.2s; background:#fff;
+}
+input:focus,select:focus,textarea:focus{ border-color:var(--brand-400); box-shadow:0 0 0 4px var(--ring); }
+
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px;
+  border:0; border-radius:12px; font-weight:800; cursor:pointer; transition:.2s; user-select:none; }
+.btn-primary{ background:var(--brand-500); color:#fff; }
+.btn-primary:hover{ background:var(--brand-600); transform:translateY(-1px); }
+.btn-ghost{ background:transparent; color:var(--brand-600); }
+.btn-ghost:hover{ background:var(--brand-100); }
+.btn-danger{ background:var(--danger); color:#fff; }
+.stack{ display:flex; flex-wrap:wrap; gap:8px; }
+
+.pill{ padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:var(--brand-100); font-size:12px; }
+.badge{ display:inline-flex; gap:6px; align-items:center; padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:var(--surface); font-size:12px; }
+.dot{ width:10px; height:10px; border-radius:50%; background:var(--danger); display:inline-block; }
+.dot.ok{ background:var(--success); }
+.muted{ color:var(--muted); }
+
+.kpi{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.tile{ border:1px solid var(--border); border-radius:12px; padding:10px; background:#fff; }
+.tile .label{ font-size:12px; color:var(--muted); }
+.tile .val{ font-size:20px; font-weight:800; display:flex; gap:8px; align-items:center; }
+.zone{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; font-size:12px; }
+.zone .zb{ border:1px dashed var(--border); border-radius:10px; padding:4px 8px; background:#fff; }
+
+.table{ width:100%; border-collapse:collapse; font-size:13px; }
+.table th,.table td{ border-bottom:1px dashed var(--border); padding:8px 6px; text-align:left; }
+.table th{ color:var(--muted); text-transform:uppercase; letter-spacing:.4px; font-size:11px; }
+.table tbody tr:hover{ background:#fffdf8; }
+
+.chart-wrap{ height:340px; }
+.notice{ border-left:4px solid var(--warn); background:#fff7ed; padding:10px 12px; border-radius:8px; font-size:13px; }
+
+small.help{ color:var(--muted); display:block; margin-top:4px; }
+
+/* 小尺寸最佳化 */
+@media (max-width:480px){
+  .kpi{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 頁首 -->
+  <header class="hero">
+    <div class="icon">🚨</div>
+    <div>
+      <h1><i class="bi bi-activity"></i> 假突破 & 進場輔助系統（BTC / ETH）</h1>
+      <p>即時監控 K 線、支撐/阻力、價量驗證與多週期，當突破/跌破/假突破觸發時，主動給出做多/做空進場、停損與目標位參考。</p>
+    </div>
+  </header>
+
+  <section class="grid" style="margin-top:12px;">
+    <!-- 左：控制面板 + Watchlist -->
+    <div class="card">
+      <h2 style="margin:0 0 8px 0;"><i class="bi bi-sliders2"></i> 參數與風控</h2>
+
+      <!-- 連線控制 -->
+      <div class="stack" style="margin:6px 0 10px;">
+        <button id="btnStart" class="btn btn-primary"><i class="bi bi-play-fill"></i> 開始追蹤</button>
+        <button id="btnStop" class="btn btn-ghost"><i class="bi bi-stop-fill"></i> 停止</button>
+        <span class="badge"><span id="liveDot" class="dot"></span> <span id="liveText">離線</span></span>
+        <span class="pill">顯示週期：<b id="tfLabel">1m</b></span>
+      </div>
+
+      <!-- 支撐/阻力與偵測 -->
+      <div class="stack" style="gap:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:220px;">
+          <label>支撐/阻力方法</label>
+          <select id="srMethod">
+            <option value="HL" selected>近期高低點（Donchian）</option>
+            <option value="MA">均線帶（MA20/MA60）</option>
+            <option value="BOLL">布林通道（MA20±2σ）</option>
+            <option value="VP">成交量密集區（簡化）</option>
+          </select>
+          <small class="help">切換不同方法即時重算區間。</small>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>觀察窗 N（根數 / 分）</label>
+          <input id="lookbackN" type="number" min="20" value="120"/>
+          <small class="help">HL/VP 以 N 根計算；1 根 = 1m。</small>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>突破緩衝（%）</label>
+          <input id="bufferPct" type="number" step="0.01" value="0.20"/>
+          <small class="help">價格需超過上/下緣至少此百分比。</small>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>量能門檻（倍）</label>
+          <input id="volMul" type="number" step="0.1" value="1.5"/>
+          <small class="help">突破時成交量 ≥ 均量×此倍數。</small>
+        </div>
+      </div>
+
+      <div class="stack" style="gap:12px; flex-wrap:wrap; margin-top:8px;">
+        <div style="flex:1; min-width:160px;">
+          <label>假突破窗（秒）</label>
+          <input id="fakeoutSec" type="number" min="60" value="600"/>
+          <small class="help">突破後此時間內回區間且回撤達標 → 假突破。</small>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>回撤門檻（%）</label>
+          <input id="retracePct" type="number" step="0.01" value="0.15"/>
+          <small class="help">自高/低回頭至少此比例。</small>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>區間帶寬（%）</label>
+          <input id="zonePct" type="number" step="0.01" value="0.20"/>
+          <small class="help">以上/下緣 ± 此百分比呈現區域。</small>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>多週期驗證</label>
+          <select id="mtf">
+            <option value="off">關閉</option>
+            <option value="on" selected>開啟（15m/30m/1D）</option>
+          </select>
+          <small class="help">跨週期一致時強化信號。</small>
+        </div>
+      </div>
+
+      <!-- 風險控制 -->
+      <div class="stack" style="gap:12px; flex-wrap:wrap; margin-top:12px;">
+        <div style="flex:1; min-width:160px;">
+          <label>帳戶本金（USDT）</label>
+          <input id="equity" type="number" value="10000"/>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>單筆最大風險（%）</label>
+          <input id="riskPct" type="number" step="0.1" value="2"/>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>停損（相對進場%）</label>
+          <input id="slPct" type="number" step="0.01" value="0.30"/>
+        </div>
+        <div style="flex:1; min-width:160px;">
+          <label>RR 倍數（目標）</label>
+          <input id="rr" type="number" step="0.1" value="2.0"/>
+        </div>
+      </div>
+
+      <div class="notice" style="margin-top:10px;">
+        <b>提示：</b>系統會在突破/跌破成立時給出 <b>Momentum</b>（立即）與 <b>Retest</b>（回測）兩種進場參考，並估算停損與目標。
+      </div>
+
+      <hr style="margin:14px 0; border:0; border-top:1px dashed var(--border)"/>
+
+      <!-- Watchlist -->
+      <h3 style="margin:0 0 8px 0;"><i class="bi bi-clipboard-plus"></i> Watchlist（追蹤/持有單）</h3>
+      <div class="stack" style="gap:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:150px;">
+          <label>幣別</label>
+          <select id="wlSymbol">
+            <option>BTCUSDT</option>
+            <option>ETHUSDT</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:120px;">
+          <label>方向</label>
+          <select id="wlSide">
+            <option value="long">多</option>
+            <option value="short">空</option>
+          </select>
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label>進場價</label>
+          <input id="wlEntry" type="number" step="0.1" placeholder="可點右側填現價"/>
+        </div>
+        <div style="flex:1; min-width:140px;">
+          <label>倉位大小</label>
+          <input id="wlSize" type="number" step="0.0001" value="0"/>
+        </div>
+        <div class="stack" style="align-items:flex-end;">
+          <button id="btnFillNow" class="btn btn-ghost"><i class="bi bi-magic"></i> 用現價</button>
+          <button id="btnAddWL" class="btn btn-primary"><i class="bi bi-plus-circle"></i> 新增</button>
+        </div>
+      </div>
+
+      <table class="table" id="wlTable" style="margin-top:8px;">
+        <thead>
+          <tr>
+            <th>#</th><th>幣別</th><th>方向</th><th>進場</th><th>停損</th><th>目標</th><th>大小</th><th>現價差</th><th>RR</th><th>狀態</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- 右：即時資訊 + 圖表 + 訊號 -->
+    <div class="card">
+      <div class="kpi">
+        <div class="tile">
+          <div class="label">BTC 現價</div>
+          <div class="val"><span id="pxBTC">--</span><span class="badge" id="rngBTC">H -- / L --</span></div>
+          <div class="zone">
+            <span class="zb">阻力區 <b id="resBTC">--</b></span>
+            <span class="zb">支撐區 <b id="supBTC">--</b></span>
+          </div>
+        </div>
+        <div class="tile">
+          <div class="label">ETH 現價</div>
+          <div class="val"><span id="pxETH">--</span><span class="badge" id="rngETH">H -- / L --</span></div>
+          <div class="zone">
+            <span class="zb">阻力區 <b id="resETH">--</b></span>
+            <span class="zb">支撐區 <b id="supETH">--</b></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack" style="margin:10px 0;">
+        <button id="btnSymBTC" class="btn btn-ghost"><i class="bi bi-currency-bitcoin"></i> 顯示 BTC</button>
+        <button id="btnSymETH" class="btn btn-ghost"><i class="bi bi-currency-exchange"></i> 顯示 ETH</button>
+        <select id="tfSel">
+          <option value="1m" selected>1m</option>
+          <option value="15m">15m</option>
+          <option value="30m">30m</option>
+          <option value="1d">1D</option>
+        </select>
+        <span class="muted">（點圖也可在 BTC/ETH 間切換）</span>
+      </div>
+
+      <div class="chart-wrap"><canvas id="kchart"></canvas></div>
+
+      <h3 style="margin:12px 0 6px 0;"><i class="bi bi-bell-fill"></i> 事件與建議</h3>
+      <table class="table" id="logTable">
+        <thead>
+          <tr>
+            <th>時間</th><th>幣別</th><th>事件</th><th>區間(H/L)</th><th>觸發價</th><th>說明</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer style="text-align:center; color:var(--muted); margin-top:16px;">
+    <small>© 假突破 & 進場輔助系統｜僅供教學研究，非投資建議。</small>
+  </footer>
+</div>
+
+<!-- 圖表：Chart.js + K線插件 -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@3.3.0/dist/chartjs-chart-financial.min.js"></script>
+
+<script>
+/* ===========================================================
+   🔧 系統說明（關鍵備註）
+   - 來源：Binance WebSocket @kline_1m（BTC/ETH），REST 補齊 15m/30m/1D
+   - 支撐/阻力：HL / MA帶 / 布林 / VolumeProfile(簡化)
+   - 突破/跌破：價 > 上緣×(1+buffer) 或 價 < 下緣×(1-buffer)；量能 ≥ 均量×mul
+   - 假突破：突破後 fakeoutSec 內回區間且回撤≥retracePct
+   - 指標：MA20/60、BOLL(20,2)、RSI(14)、MACD(12,26,9)、ATR(14)（簡化）
+   - 進場：Momentum（立即）/ Retest（回測帶），估停損與目標（RR）
+   - 風控：帳戶本金、單筆風險%，建議倉位（Qty = Equity×Risk / |Entry-SL|）
+   =========================================================== */
+
+// ========= DOM 物件 =========
+const D = (id)=>document.getElementById(id);
+const els = {
+  liveDot: D('liveDot'), liveText:D('liveText'),
+  pxBTC:D('pxBTC'), pxETH:D('pxETH'),
+  rngBTC:D('rngBTC'), rngETH:D('rngETH'),
+  resBTC:D('resBTC'), supBTC:D('supBTC'), resETH:D('resETH'), supETH:D('supETH'),
+  srMethod:D('srMethod'), lookbackN:D('lookbackN'), bufferPct:D('bufferPct'), volMul:D('volMul'),
+  fakeoutSec:D('fakeoutSec'), retracePct:D('retracePct'), zonePct:D('zonePct'),
+  mtf:D('mtf'), equity:D('equity'), riskPct:D('riskPct'), slPct:D('slPct'), rr:D('rr'),
+  btnStart:D('btnStart'), btnStop:D('btnStop'),
+  btnSymBTC:D('btnSymBTC'), btnSymETH:D('btnSymETH'), tfSel:D('tfSel'), tfLabel:D('tfLabel'),
+  wlSymbol:D('wlSymbol'), wlSide:D('wlSide'), wlEntry:D('wlEntry'), wlSize:D('wlSize'),
+  btnFillNow:D('btnFillNow'), btnAddWL:D('btnAddWL'),
+  wlBody: document.querySelector('#wlTable tbody'),
+  logBody: document.querySelector('#logTable tbody'),
+};
+
+// ========= 狀態 =========
+const state = {
+  symbol: 'BTCUSDT',
+  tf: '1m',
+  prices: { BTCUSDT: [], ETHUSDT: [] },      // 1m K線快取
+  mtf: { 'BTCUSDT':{ '15m':[], '30m':[], '1d':[] }, 'ETHUSDT':{ '15m':[], '30m':[], '1d':[] } },
+  lastHL: { BTCUSDT:{H:null,L:null}, ETHUSDT:{H:null,L:null} },
+  breakout: { BTCUSDT:null, ETHUSDT:null },   // 假突破狀態追蹤
+  momentum: { BTCUSDT:null, ETHUSDT:null },   // 突破後回測追蹤
+  ws:null, provider:'—', running:false,
+  watchlist: [], seq:1
+};
+
+// ========= 小工具 =========
+const now = ()=> Date.now();
+const fmt2 = (n)=> (n==null||isNaN(n)) ? '--' : (+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt4 = (n)=> (n==null||isNaN(n)) ? '--' : (+n).toLocaleString('en-US',{minimumFractionDigits:4,maximumFractionDigits:4});
+const pct = (x)=> (x*100).toFixed(2)+'%';
+function notify(msg){
+  if('Notification' in window){
+    if(Notification.permission==='granted'){ new Notification('📈 行情提醒', {body:msg}); }
+    else if(Notification.permission!=='denied'){ Notification.requestPermission(); }
+  }
+  document.title = '🚨 ' + msg + ' | 假突破輔助';
+}
+function beep(f=880,d=0.3){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type='square'; o.frequency.value=f; g.gain.value=0.0001;
+    o.connect(g); g.connect(ctx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime+d);
+    o.stop(ctx.currentTime+d+0.02);
+  }catch(e){}
+}
+
+// ========= 指標（簡化版，足夠即時判斷） =========
+function SMA(arr, n){ if(arr.length<n) return []; let out=[]; let s=0; for(let i=0;i<arr.length;i++){ s+=arr[i]; if(i>=n) s-=arr[i-n]; if(i>=n-1) out.push(s/n); } return out; }
+function EMA(arr, n){ if(arr.length===0) return []; const k=2/(n+1); let ema=[]; let p=arr[0]; ema.push(p); for(let i=1;i<arr.length;i++){ p = arr[i]*k + p*(1-k); ema.push(p); } return ema; }
+function STD(arr, n){ if(arr.length<n) return []; let out=[]; for(let i=n-1;i<arr.length;i++){ const slice=arr.slice(i-n+1,i+1); const m=slice.reduce((a,b)=>a+b,0)/n; const v=slice.reduce((a,b)=>a+(b-m)*(b-m),0)/n; out.push(Math.sqrt(v)); } return out; }
+function RSI(arr, n=14){ if(arr.length<n+1) return []; let gains=0,losses=0,rs=[],rsi=[]; for(let i=1;i<=n;i++){ const diff=arr[i]-arr[i-1]; gains+=Math.max(diff,0); losses+=Math.max(-diff,0); } let avgG=gains/n, avgL=losses/n; rsi.push(100 - 100/(1+(avgG/(avgL||1e-9)))); for(let i=n+1;i<arr.length;i++){ const diff=arr[i]-arr[i-1]; avgG=(avgG*(n-1)+Math.max(diff,0))/n; avgL=(avgL*(n-1)+Math.max(-diff,0))/n; rs=avgG/(avgL||1e-9); rsi.push(100 - 100/(1+rs)); } return rsi; }
+function MACD(arr, f=12, s=26, sig=9){ if(arr.length< s+sig) return {macd:[],signal:[],hist:[]}; const emaF=EMA(arr,f), emaS=EMA(arr,s); const line=[]; for(let i=0;i<arr.length;i++){ line.push((emaF[i]??arr[i])-(emaS[i]??arr[i])); } const signal=EMA(line.filter(x=>x!=null), sig); const hist=[]; let si=0; for(let i=0;i<line.length;i++){ const sg = signal[si] ?? null; hist.push(sg==null?null:(line[i]-sg)); if(sg!=null) si++; } return {macd:line, signal, hist}; }
+function TR(c){ const tr=[null]; for(let i=1;i<c.length;i++){ const prev=c[i-1], cur=c[i]; tr.push(Math.max(cur.h-cur.l, Math.abs(cur.h-prev.c), Math.abs(cur.l-prev.c))); } return tr; }
+function ATR(c, n=14){ const tr=TR(c); let out=[]; let s=0; for(let i=1;i<tr.length;i++){ s+=tr[i]; if(i>=n){ s-=tr[i-n+1]; out.push(s/n); } } return out; }
+
+// ========= 支撐/阻力 =========
+function SR_HL(candles, N, zonePct){
+  const sub = candles.slice(-N);
+  if(sub.length===0) return null;
+  const H = Math.max(...sub.map(x=>x.h)), L = Math.min(...sub.map(x=>x.l));
+  return { H, L, res:[H, H*(1+zonePct)], sup:[L*(1-zonePct), L], note:'HL' };
+}
+function SR_MA(candles, zonePct){
+  const closes = candles.map(x=>x.c);
+  const ma20 = SMA(closes, 20); const ma60 = SMA(closes, 60);
+  if(ma60.length===0) return null;
+  const last20 = ma20[ma20.length-1], last60 = ma60[ma60.length-1];
+  const H = Math.max(last20,last60), L = Math.min(last20,last60);
+  return { H, L, res:[H, H*(1+zonePct)], sup:[L*(1-zonePct), L], note:'MA' };
+}
+function SR_BOLL(candles, zonePct){
+  const closes = candles.map(x=>x.c);
+  const ma20 = SMA(closes, 20); const std20 = STD(closes, 20);
+  if(std20.length===0) return null;
+  const m = ma20[ma20.length-1], s = std20[std20.length-1];
+  const up = m + 2*s, dn = m - 2*s;
+  return { H:up, L:dn, res:[up, up*(1+zonePct)], sup:[dn*(1-zonePct), dn], note:'BOLL' };
+}
+function SR_VP(candles, N, bins=24, zonePct){
+  const sub = candles.slice(-N);
+  if(sub.length<10) return null;
+  const min = Math.min(...sub.map(x=>x.l)), max=Math.max(...sub.map(x=>x.h));
+  const w = (max-min)/bins;
+  const hist = new Array(bins).fill(0);
+  for(const k of sub){
+    const p = (k.h+k.l+k.c)/3; // 簡化 typical price
+    const idx = Math.min(bins-1, Math.max(0, Math.floor((p-min)/w)));
+    hist[idx]+=k.v;
+  }
+  // 找上半部最大桶為阻力、下半部最大桶為支撐
+  const mid = Math.floor(bins/2);
+  let topI=mid, topV=-1, botI=mid-1, botV=-1;
+  for(let i=mid;i<bins;i++){ if(hist[i]>topV){ topV=hist[i]; topI=i; } }
+  for(let i=0;i<mid;i++){ if(hist[i]>botV){ botV=hist[i]; botI=i; } }
+  const H = min + (topI+0.5)*w, L = min + (botI+0.5)*w;
+  return { H, L, res:[H, H*(1+zonePct)], sup:[L*(1-zonePct), L], note:'VP' };
+}
+
+// ========= 圖表 =========
+let chart;
+function initChart(){
+  const ctx = document.getElementById('kchart');
+  chart = new Chart(ctx, {
+    type:'candlestick',
+    data:{ datasets:[
+      {label:'K', data:[], },
+      {label:'MA20', type:'line', data:[], borderWidth:1.5, pointRadius:0, borderDash:[6,4]},
+      {label:'MA60', type:'line', data:[], borderWidth:1.5, pointRadius:0, borderDash:[6,4]},
+      {label:'BOLL-UP', type:'line', data:[], borderWidth:1, pointRadius:0},
+      {label:'BOLL-DN', type:'line', data:[], borderWidth:1, pointRadius:0},
+      {label:'ENTRY', type:'scatter', data:[], pointRadius:4 },
+      {label:'SL', type:'scatter', data:[], pointRadius:3 },
+      {label:'TP', type:'scatter', data:[], pointRadius:3 },
+      {label:'H-L 線', type:'line', data:[], borderWidth:1, pointRadius:0, borderDash:[8,6]},
+      {label:'H-L 線2', type:'line', data:[], borderWidth:1, pointRadius:0, borderDash:[8,6]},
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      parsing:false,
+      plugins:{ legend:{display:false}, tooltip:{mode:'index', intersect:false} },
+      scales:{
+        x:{ adapters:{}, time:{unit:'minute'} },
+        y:{ ticks:{ maxTicksLimit:8 } }
+      }
+    }
+  });
+}
+function upChart(sym){
+  const c = getCandles(sym, '1m');
+  // 主 K 線
+  chart.data.datasets[0].data = c.map(k=>({x:k.t, o:k.o, h:k.h, l:k.l, c:k.c}));
+  // MA & BOLL
+  const closes = c.map(k=>k.c);
+  const ma20 = SMA(closes,20), ma60=SMA(closes,60), std20=STD(closes,20);
+  const bollU=[], bollD=[];
+  for(let i=0;i<std20.length;i++){
+    const m = ma20[i+(20-1)]; const s = std20[i];
+    bollU.push(m+2*s); bollD.push(m-2*s);
+  }
+  chart.data.datasets[1].data = c.slice(-(ma20.length)).map((k,i)=>({x:k.t, y:ma20[i]}));
+  chart.data.datasets[2].data = c.slice(-(ma60.length)).map((k,i)=>({x:k.t, y:ma60[i]}));
+  chart.data.datasets[3].data = c.slice(-(bollU.length)).map((k,i)=>({x:k.t, y:bollU[i]}));
+  chart.data.datasets[4].data = c.slice(-(bollD.length)).map((k,i)=>({x:k.t, y:bollD[i]}));
+  // H/L 水平線（用折線模擬）
+  const sr = computeSR(sym);
+  const xs = c.map(k=>k.t);
+  chart.data.datasets[8].data = sr? xs.map(x=>({x, y:sr.H})) : [];
+  chart.data.datasets[9].data = sr? xs.map(x=>({x, y:sr.L})) : [];
+  // Entry/SL/TP 標記（來自 watchlist）
+  const marksE=[], marksS=[], marksT=[];
+  for(const o of state.watchlist.filter(x=>x.symbol===sym && x.status==='open')){
+    const lastX = xs[xs.length-1] || Date.now();
+    marksE.push({x:lastX, y:o.entry}); if(o.stop) marksS.push({x:lastX, y:o.stop}); if(o.target) marksT.push({x:lastX, y:o.target});
+  }
+  chart.data.datasets[5].data = marksE;
+  chart.data.datasets[6].data = marksS;
+  chart.data.datasets[7].data = marksT;
+  chart.update('none');
+}
+
+// ========= 資料（WS/REST） =========
+function getCandles(sym, tf){ return tf==='1m' ? state.prices[sym] : state.mtf[sym][tf]; }
+
+function connectWS(){
+  cleanupWS();
+  const url = "wss://stream.binance.com:9443/stream?streams=btcusdt@kline_1m/ethusdt@kline_1m";
+  state.ws = new WebSocket(url);
+  state.ws.onopen = ()=> live(true, 'Binance WS');
+  state.ws.onclose = ()=> live(false);
+  state.ws.onerror = ()=> live(false);
+  state.ws.onmessage = (ev)=>{
+    const m = JSON.parse(ev.data);
+    if(!m || !m.stream || !m.data) return;
+    const d = m.data.k; // kline payload
+    const sym = (d.s||'').toUpperCase();
+    const k = { t:d.T, o:+d.o, h:+d.h, l:+d.l, c:+d.c, v:+d.v, x:d.x }; // x=是否收盤
+    const arr = state.prices[sym] || (state.prices[sym]=[]);
+    // 將 kline 以 close 時更新；未收盤則替換末根
+    if(arr.length && arr[arr.length-1].t===k.t) arr[arr.length-1]=k;
+    else arr.push(k);
+    // 僅保留近 2000 根
+    if(arr.length>2000) arr.shift();
+    // UI更新
+    onTick(sym);
+  };
+}
+function cleanupWS(){ try{ state.ws?.close(); }catch(e){} state.ws=null; }
+function live(ok,src){ els.liveDot.classList.toggle('ok', !!ok); els.liveText.textContent = ok?('連線中 · '+(src||state.provider)):'離線'; }
+
+async function fetchKlines(sym, interval, limit=300){
+  const url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${interval}&limit=${limit}`;
+  const r = await fetch(url,{cache:'no-store'}); if(!r.ok) return [];
+  const j = await r.json();
+  return j.map(x=>({ t:x[6], o:+x[1], h:+x[2], l:+x[3], c:+x[4], v:+x[5], x:true }));
+}
+async function refreshMTF(){
+  if(els.mtf.value!=='on') return;
+  for(const sym of ['BTCUSDT','ETHUSDT']){
+    for(const tf of ['15m','30m','1d']){
+      try{ state.mtf[sym][tf] = await fetchKlines(sym, tf, 300); }catch(e){}
+    }
+  }
+}
+setInterval(refreshMTF, 60_000*3);
+
+// ========= 事件：每筆價格更新後的判斷 =========
+function onTick(sym){
+  const arr = state.prices[sym];
+  if(sym==='BTCUSDT'){
+    els.pxBTC.textContent = fmt2(arr.at(-1)?.c);
+  }else{
+    els.pxETH.textContent = fmt2(arr.at(-1)?.c);
+  }
+  // 計算 SR 與更新顯示
+  const sr = computeSR(sym);
+  if(sr){
+    const H = sr.H, L = sr.L;
+    state.lastHL[sym] = {H,L};
+    if(sym==='BTCUSDT'){
+      els.rngBTC.textContent = `H ${fmt2(H)} / L ${fmt2(L)}`;
+      els.resBTC.textContent = `${fmt2(sr.res[0])} ~ ${fmt2(sr.res[1])}`;
+      els.supBTC.textContent = `${fmt2(sr.sup[0])} ~ ${fmt2(sr.sup[1])}`;
+    }else{
+      els.rngETH.textContent = `H ${fmt2(H)} / L ${fmt2(L)}`;
+      els.resETH.textContent = `${fmt2(sr.res[0])} ~ ${fmt2(sr.res[1])}`;
+      els.supETH.textContent = `${fmt2(sr.sup[0])} ~ ${fmt2(sr.sup[1])}`;
+    }
+  }
+  // 觸發判斷（突破/跌破/假突破/回測）
+  detect(sym);
+  // 更新圖表（僅當前顯示的幣別）
+  if(state.symbol===sym && state.tf==='1m' && chart) upChart(sym);
+  // 更新 watchlist PnL/狀態
+  updateWatchlistRows();
+}
+
+// 支撐/阻力計算入口
+function computeSR(sym){
+  const N = +els.lookbackN.value;
+  const zone = (+els.zonePct.value)/100;
+  const method = els.srMethod.value;
+  const c1m = state.prices[sym];
+  if(c1m.length<60) return null;
+  if(method==='HL') return SR_HL(c1m, N, zone);
+  if(method==='MA') return SR_MA(c1m, zone);
+  if(method==='BOLL') return SR_BOLL(c1m, zone);
+  if(method==='VP') return SR_VP(c1m, N, 24, zone);
+  return null;
+}
+
+// 記錄表格
+function addLog({ts=now(), sym, event, H, L, price, desc}){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${new Date(ts).toLocaleString()}</td>
+    <td>${sym.replace('USDT','')}</td>
+    <td>${event}</td>
+    <td>${H?`H ${fmt2(H)} / L ${fmt2(L)}`:'--'}</td>
+    <td>${fmt2(price)}</td>
+    <td>${desc||''}</td>`;
+  els.logBody.prepend(tr);
+  tr.style.background='#fff1f1'; setTimeout(()=>tr.style.background='',800);
+}
+
+// 規則引擎
+function detect(sym){
+  const arr = state.prices[sym];
+  if(arr.length<120) return;
+  const last = arr.at(-1);
+  const closes = arr.map(x=>x.c), vols = arr.map(x=>x.v);
+  const volMA = SMA(vols, 20).at(-1) || 0;
+  const sr = computeSR(sym); if(!sr) return;
+  const buf = (+els.bufferPct.value)/100;
+  const volMul = +els.volMul.value;
+  const fakeWin = +els.fakeoutSec.value;
+  const retrace = (+els.retracePct.value)/100;
+
+  // 多週期一致性（簡化：看 15m/30m/1d Close 是否位於同方向）
+  let mtfOk = 0;
+  if(els.mtf.value==='on'){
+    for(const tf of ['15m','30m','1d']){
+      const a = state.mtf[sym][tf]; if(!a || a.length<60) continue;
+      const sr2 = SR_HL(a, 60, 0); // 近60根估簡易H/L
+      if(!sr2) continue;
+      const c = a.at(-1).c;
+      if(c > sr2.H) mtfOk++;
+      else if(c < sr2.L) mtfOk--;
+    }
+  }
+
+  // A) 突破/跌破 + 價量驗證（Momentum）
+  let mom = state.momentum[sym];
+  if(!mom){
+    if(last.c > sr.H*(1+buf) && (last.v >= volMA*volMul)){
+      state.momentum[sym] = {dir:'up', t:now(), level:sr.H, entry:last.c, mtf:mtfOk};
+      addLog({sym, event:'⚡ 突破（多）', H:sr.H, L:sr.L, price:last.c, desc:`量能 ${volMA? (last.v/volMA).toFixed(2)+'x':''}; MTF:${mtfOk}`});
+      notify(`${sym} 突破成立（多）`); beep(980,0.25);
+      suggestEntry(sym,'long','Momentum', last.c, sr);
+    }else if(last.c < sr.L*(1-buf) && (last.v >= volMA*volMul)){
+      state.momentum[sym] = {dir:'down', t:now(), level:sr.L, entry:last.c, mtf:mtfOk};
+      addLog({sym, event:'⚡ 跌破（空）', H:sr.H, L:sr.L, price:last.c, desc:`量能 ${(volMA? (last.v/volMA).toFixed(2)+'x':'')}; MTF:${mtfOk}`});
+      notify(`${sym} 跌破成立（空）`); beep(520,0.25);
+      suggestEntry(sym,'short','Momentum', last.c, sr);
+    }
+  }else{
+    // 回測進場帶
+    if(mom.dir==='up'){
+      const inBand = last.c >= mom.level*(1 - buf/2) && last.c <= mom.level*(1 + buf/2);
+      const within = (now()-mom.t) <= 3*60*1000;
+      if(inBand && within){
+        addLog({sym, event:'↩ 回測進場帶（多）', H:sr.H, L:sr.L, price:last.c, desc:'回踩上緣附近'});
+        suggestEntry(sym,'long','Retest', last.c, sr);
+        mom = null; state.momentum[sym]=null;
+      }
+    }else{
+      const inBand = last.c >= mom.level*(1 - buf/2) && last.c <= mom.level*(1 + buf/2);
+      const within = (now()-mom.t) <= 3*60*1000;
+      if(inBand && within){
+        addLog({sym, event:'↩ 回測進場帶（空）', H:sr.H, L:sr.L, price:last.c, desc:'反彈下緣附近'});
+        suggestEntry(sym,'short','Retest', last.c, sr);
+        mom = null; state.momentum[sym]=null;
+      }
+    }
+  }
+
+  // B) 假突破：於窗口內回區間且回撤達標
+  let bk = state.breakout[sym];
+  if(!bk){
+    if(last.c > sr.H*(1+buf)) state.breakout[sym]={dir:'up', t:now(), level:sr.H, peak:last.c};
+    else if(last.c < sr.L*(1-buf)) state.breakout[sym]={dir:'down', t:now(), level:sr.L, trough:last.c};
+  }else{
+    if(bk.dir==='up'){
+      if(last.c>bk.peak) bk.peak=last.c;
+      const back = last.c <= bk.level;
+      const timeOk = (now()-bk.t)<= fakeWin*1000;
+      const retr = (bk.peak-last.c)/bk.peak;
+      if(timeOk && back && retr>=retrace){
+        addLog({sym, event:'❗ 上破→回落（假突破）', H:sr.H, L:sr.L, price:last.c, desc:`回撤 ${pct(retr)}`});
+        notify(`${sym} 疑似假突破（牛陷阱）`); beep(700,0.25);
+        state.breakout[sym]=null;
+      }
+      if(!timeOk) state.breakout[sym]=null;
+    }else{
+      if(last.c<bk.trough) bk.trough=last.c;
+      const back = last.c >= bk.level;
+      const timeOk = (now()-bk.t)<= fakeWin*1000;
+      const reb = (last.c - bk.trough)/Math.max(last.c,1e-9);
+      if(timeOk && back && reb>=retrace){
+        addLog({sym, event:'❗ 下破→回升（假跌破）', H:sr.H, L:sr.L, price:last.c, desc:`反彈 ${pct(reb)}`});
+        notify(`${sym} 疑似假跌破（熊陷阱）`); beep(640,0.25);
+        state.breakout[sym]=null;
+      }
+      if(!timeOk) state.breakout[sym]=null;
+    }
+  }
+}
+
+// 進場建議：計算 SL/TP 與建議倉位
+function suggestEntry(sym, side, strat, entry, sr){
+  const zone = (+els.zonePct.value)/100;
+  const slPct = (+els.slPct.value)/100;
+  let stop, target;
+  if(side==='long'){
+    const supLow = sr.sup[0];
+    stop = Math.min(entry*(1 - slPct), supLow);
+    const risk = Math.max(entry - stop, entry*0.0001);
+    target = entry + (+els.rr.value)*risk;
+  }else{
+    const resHigh = sr.res[1];
+    stop = Math.max(entry*(1 + slPct), resHigh);
+    const risk = Math.max(stop - entry, entry*0.0001);
+    target = entry - (+els.rr.value)*risk;
+  }
+  // 建議倉位
+  const equity = +els.equity.value, riskPct = (+els.riskPct.value)/100;
+  const riskMoney = equity*riskPct;
+  const qty = Math.max(0, riskMoney/Math.max(Math.abs(entry-stop), 1e-9));
+
+  addLog({sym, event:`📌 進場建議（${strat} / ${side==='long'?'多':'空'}）`, H:sr.H, L:sr.L, price:entry,
+    desc:`SL ${fmt2(stop)} / TP ${fmt2(target)} / 建議倉位 ≈ ${fmt4(qty)}`});
+
+  // 若使用者有 Watchlist 未填大小，幫忙帶入建議
+  // （不自動新增，避免誤下單；由使用者按「新增」）
+}
+
+// ========= Watchlist =========
+function renderWL(){
+  els.wlBody.innerHTML='';
+  for(const o of state.watchlist.slice().reverse()){
+    const tr = document.createElement('tr');
+    const diff = latestPx(o.symbol) - o.entry;
+    const pnl = o.side==='long' ? diff : -diff;
+    const rr = o.side==='long' ? (o.entry - (o.stop||o.entry-1e-6)) : ((o.stop||o.entry+1e-6) - o.entry);
+    const rrShow = rr? ((Math.abs(pnl)/Math.abs(rr)).toFixed(2)) : '--';
+    tr.innerHTML = `
+      <td>${o.id}</td>
+      <td>${o.symbol.replace('USDT','')}</td>
+      <td>${o.side==='long'?'多':'空'}</td>
+      <td>${fmt2(o.entry)}</td>
+      <td>${fmt2(o.stop)}</td>
+      <td>${fmt2(o.target)}</td>
+      <td>${fmt4(o.size)}</td>
+      <td>${(o.side==='long'?diff:-diff)>0?'<span style="color:var(--success)">'+fmt2(Math.abs(diff))+'</span>':'<span style="color:var(--danger)">'+fmt2(Math.abs(diff))+'</span>'}</td>
+      <td>${rrShow}</td>
+      <td>${o.status}</td>
+      <td class="stack">
+        <button class="btn btn-ghost" data-act="close" data-id="${o.id}"><i class="bi bi-check2-circle"></i></button>
+        <button class="btn btn-ghost" data-act="stop" data-id="${o.id}"><i class="bi bi-exclamation-octagon"></i></button>
+        <button class="btn btn-danger" data-act="del" data-id="${o.id}"><i class="bi bi-trash3"></i></button>
+      </td>`;
+    els.wlBody.appendChild(tr);
+  }
+}
+function latestPx(sym){
+  const a = state.prices[sym]; return a?.length? a.at(-1).c : NaN;
+}
+function updateWatchlistRows(){
+  // 觸發止損/TP 或狀態變更提示
+  for(const o of state.watchlist){
+    const px = latestPx(o.symbol); if(!isFinite(px)) continue;
+    if(o.status!=='open') continue;
+    if(o.side==='long'){
+      if(o.stop && px<=o.stop){ o.status='stopped'; addLog({sym:o.symbol, event:'⛔ 多單止損', price:px}); notify(`${o.symbol} 多單止損`); beep(480,0.3); }
+      else if(o.target && px>=o.target){ o.status='closed'; addLog({sym:o.symbol, event:'✅ 多單達標', price:px}); notify(`${o.symbol} 多單達標`); beep(1020,0.3); }
+    }else{
+      if(o.stop && px>=o.stop){ o.status='stopped'; addLog({sym:o.symbol, event:'⛔ 空單止損', price:px}); notify(`${o.symbol} 空單止損`); beep(480,0.3); }
+      else if(o.target && px<=o.target){ o.status='closed'; addLog({sym:o.symbol, event:'✅ 空單達標', price:px}); notify(`${o.symbol} 空單達標`); beep(1020,0.3); }
+    }
+  }
+  renderWL();
+}
+
+// 新增 watchlist
+function addWL(){
+  const sym = els.wlSymbol.value;
+  const side = els.wlSide.value;
+  const entry = +els.wlEntry.value || latestPx(sym);
+  const size = +els.wlSize.value || 0;
+
+  const sr = computeSR(sym); if(!sr){ alert('資料不足，請稍後再試'); return; }
+  const slPct = (+els.slPct.value)/100;
+  let stop, target;
+  if(side==='long'){ stop = Math.min(entry*(1 - slPct), sr.sup[0]); target = entry + (+els.rr.value)*(entry - stop); }
+  else{ stop = Math.max(entry*(1 + slPct), sr.res[1]); target = entry - (+els.rr.value)*(stop - entry); }
+
+  const o = { id: state.seq++, symbol: sym, side, entry, size, stop, target, status:'open', openTime: now() };
+  state.watchlist.push(o); saveLocal(); renderWL();
+}
+function onWLAction(e){
+  const btn = e.target.closest('button'); if(!btn) return;
+  const id = +btn.dataset.id; const act = btn.dataset.act;
+  const i = state.watchlist.findIndex(x=>x.id===id); if(i<0) return;
+  if(act==='del'){ state.watchlist.splice(i,1); }
+  else if(act==='close'){ state.watchlist[i].status='closed'; }
+  else if(act==='stop'){ state.watchlist[i].status='stopped'; }
+  saveLocal(); renderWL();
+}
+
+// ========= 儲存 =========
+function saveLocal(){
+  localStorage.setItem('fakeout_settings', JSON.stringify({
+    srMethod: els.srMethod.value, lookbackN:+els.lookbackN.value, bufferPct:+els.bufferPct.value,
+    volMul:+els.volMul.value, fakeoutSec:+els.fakeoutSec.value, retracePct:+els.retracePct.value,
+    zonePct:+els.zonePct.value, mtf: els.mtf.value,
+    equity:+els.equity.value, riskPct:+els.riskPct.value, slPct:+els.slPct.value, rr:+els.rr.value
+  }));
+  localStorage.setItem('fakeout_watchlist', JSON.stringify(state.watchlist));
+}
+function loadLocal(){
+  try{
+    const s = JSON.parse(localStorage.getItem('fakeout_settings')||'{}');
+    if(s.srMethod) els.srMethod.value=s.srMethod;
+    if(s.lookbackN) els.lookbackN.value=s.lookbackN;
+    if(s.bufferPct!=null) els.bufferPct.value=s.bufferPct;
+    if(s.volMul!=null) els.volMul.value=s.volMul;
+    if(s.fakeoutSec) els.fakeoutSec.value=s.fakeoutSec;
+    if(s.retracePct!=null) els.retracePct.value=s.retracePct;
+    if(s.zonePct!=null) els.zonePct.value=s.zonePct;
+    if(s.mtf) els.mtf.value=s.mtf;
+    if(s.equity) els.equity.value=s.equity;
+    if(s.riskPct!=null) els.riskPct.value=s.riskPct;
+    if(s.slPct!=null) els.slPct.value=s.slPct;
+    if(s.rr!=null) els.rr.value=s.rr;
+  }catch(e){}
+  try{
+    state.watchlist = JSON.parse(localStorage.getItem('fakeout_watchlist')||'[]');
+  }catch(e){ state.watchlist=[]; }
+}
+
+// ========= 事件繫結 =========
+['srMethod','lookbackN','bufferPct','volMul','fakeoutSec','retracePct','zonePct','mtf','equity','riskPct','slPct','rr']
+  .forEach(id=> D(id).addEventListener('change', saveLocal));
+
+D('btnAddWL').addEventListener('click', addWL);
+D('wlTable').addEventListener('click', onWLAction);
+D('btnFillNow').addEventListener('click', ()=>{
+  const sym = els.wlSymbol.value; const px = latestPx(sym);
+  if(isFinite(px)) els.wlEntry.value = px;
+});
+
+// 切換顯示幣別
+D('btnSymBTC').addEventListener('click', ()=>{ state.symbol='BTCUSDT'; els.tfSel.value='1m'; state.tf='1m'; els.tfLabel.textContent='1m'; if(chart) upChart('BTCUSDT'); });
+D('btnSymETH').addEventListener('click', ()=>{ state.symbol='ETHUSDT'; els.tfSel.value='1m'; state.tf='1m'; els.tfLabel.textContent='1m'; if(chart) upChart('ETHUSDT'); });
+// 切換 timeframe（僅切換顯示，資料以 REST）
+D('tfSel').addEventListener('change', async ()=>{
+  const tf = els.tfSel.value; state.tf=tf; els.tfLabel.textContent=tf;
+  if(tf==='1m'){ upChart(state.symbol); return; }
+  // 以 REST 取對應週期
+  const a = await fetchKlines(state.symbol, tf, 300);
+  state.mtf[state.symbol][tf]=a;
+  // 更新圖表
+  chart.data.datasets[0].data = a.map(k=>({x:k.t, o:k.o, h:k.h, l:k.l, c:k.c}));
+  // 清除其他線以避免錯位（僅作展示）
+  chart.data.datasets[1].data = []; chart.data.datasets[2].data=[];
+  chart.data.datasets[3].data = []; chart.data.datasets[4].data=[];
+  chart.data.datasets[5].data = []; chart.data.datasets[6].data=[]; chart.data.datasets[7].data=[];
+  // 簡易 H/L 標線
+  if(a.length){
+    const sr2 = SR_HL(a, Math.min(+els.lookbackN.value, a.length), (+els.zonePct.value)/100);
+    const xs = a.map(k=>k.t);
+    chart.data.datasets[8].data = sr2? xs.map(x=>({x, y:sr2.H})) : [];
+    chart.data.datasets[9].data = sr2? xs.map(x=>({x, y:sr2.L})) : [];
+  }
+  chart.update('none');
+});
+
+// 啟停
+D('btnStart').addEventListener('click', async ()=>{
+  if(state.running) return;
+  state.running=true; connectWS(); await refreshMTF(); initChart(); upChart(state.symbol);
+  notify('已開始追蹤 BTC/ETH'); 
+});
+D('btnStop').addEventListener('click', ()=>{
+  state.running=false; cleanupWS(); live(false);
+});
+
+// 初始
+loadLocal(); initChart();
+
+</script>
+</body>
+</html>

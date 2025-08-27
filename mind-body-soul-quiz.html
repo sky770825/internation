@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>身心靈瘦身小測驗｜塔羅星空風</title>
+  <!-- Bootstrap Icons（僅用於圖示修飾） -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+
+  <style>
+    /* =========================================================
+       Bootswatch（Minty 風格精簡版‧已內嵌）
+       ※ 無需外聯，維持一致的按鈕/表單外觀
+       ========================================================= */
+    :root{
+      --bs-primary:#2ecc71;      /* 明亮草綠 */
+      --bs-secondary:#6c757d;
+      --bs-dark:#212529;
+      --bs-light:#f8f9fa;
+      --bs-body-color:#f5f5f8;
+      --bs-body-bg:#0d0b18;      /* 深夜藍紫 */
+      --card-bg:rgba(23, 20, 38, 0.65);
+      --glass:rgba(255,255,255,0.08);
+      --accent:#b892ff;          /* 神秘紫 */
+      --accent-2:#ffd08a;        /* 溫暖金 */
+      --muted:#a2a2a8;
+      --ring:0 0 0 .2rem rgba(46,204,113,.35);
+      --success:#39d98a;
+      --danger:#ff6b6b;
+      --warning:#ffd166;
+      --info:#66d9ff;
+    }
+    * { box-sizing: border-box; } /* 🔒避免元素超出容器 */
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:"Microsoft JhengHei", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Heiti TC", sans-serif;
+      color:var(--bs-body-color);
+      background: radial-gradient(1200px 800px at 10% 10%, #1a1430 0%, #0d0b18 60%, #080611 100%);
+      letter-spacing: .2px;
+      line-height: 1.7;
+      font-size: 17px; /* 📱字體不要太小 */
+    }
+
+    /* ---------------------------------------------------------
+       星空背景（柔和流動 + 微閃爍）
+       --------------------------------------------------------- */
+    .stars, .twinkle, .nebula {
+      position: fixed; inset:0; pointer-events:none; z-index:0;
+    }
+    .stars {
+      background:
+        radial-gradient(1px 1px at 10% 20%, #fff 70%, transparent 72%) repeat,
+        radial-gradient(1px 1px at 30% 80%, #fff 70%, transparent 72%) repeat,
+        radial-gradient(1px 1px at 70% 30%, #fff 70%, transparent 72%) repeat,
+        radial-gradient(1px 1px at 90% 60%, #fff 70%, transparent 72%) repeat;
+      background-size: 400px 400px, 500px 500px, 600px 600px, 700px 700px;
+      opacity:.45;
+      animation: drift 60s linear infinite;
+    }
+    .twinkle{
+      background:
+        radial-gradient(2px 2px at 20% 30%, #fff 70%, transparent 72%) repeat,
+        radial-gradient(2px 2px at 80% 50%, #fff 70%, transparent 72%) repeat,
+        radial-gradient(2px 2px at 50% 80%, #fff 70%, transparent 72%) repeat;
+      background-size: 600px 600px, 700px 700px, 800px 800px;
+      mix-blend-mode: screen;
+      opacity:.25;
+      animation: twinkle 4.6s ease-in-out infinite;
+    }
+    .nebula{
+      background:
+        radial-gradient(600px 300px at 15% 70%, rgba(184,146,255,.18), transparent 70%),
+        radial-gradient(500px 300px at 85% 25%, rgba(255,208,138,.16), transparent 70%),
+        radial-gradient(400px 260px at 60% 80%, rgba(46,204,113,.10), transparent 70%);
+      filter: blur(8px);
+      animation: pulse 12s ease-in-out infinite;
+    }
+    @keyframes drift{ to{ background-position: 600px 0, -700px 0, 800px 0, -900px 0; } }
+    @keyframes twinkle{ 50%{ opacity:.4 } }
+    @keyframes pulse{ 50%{ opacity:.8 } }
+
+    /* ---------------------------------------------------------
+       版面：手機優先、置中卡片、IG風玻璃質感
+       --------------------------------------------------------- */
+    .wrap{
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 20px 14px 80px;
+    }
+    .card{
+      width: 100%;
+      max-width: 920px; /* 平板以上多一點空間 */
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+    .card-header{
+      padding: 18px 16px;
+      background: linear-gradient(120deg, rgba(46,204,113,.24), rgba(184,146,255,.22));
+      border-bottom: 1px solid rgba(255,255,255,.1);
+      display:flex; align-items:center; gap:10px; justify-content:space-between;
+    }
+    .coach{
+      font-weight: 800; font-size: 20px;
+      letter-spacing: .5px;
+      display:flex; align-items:center; gap:8px;
+    }
+    .coach .badge{
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.16); color:#fff;
+    }
+    .logo-chip{
+      display:flex; align-items:center; gap:8px;
+      font-size:12px; padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.12);
+    }
+    .title{
+      font-size: 22px; font-weight: 900; margin: 8px 0 0;
+    }
+
+    .card-body{ padding: 18px; }
+
+    .hero{
+      display: grid; gap: 14px;
+      grid-template-columns: 1fr;
+    }
+    .tarot{
+      width: 100%;
+      aspect-ratio: 3/4;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(120px 120px at 70% 20%, rgba(255,208,138,.18), transparent 60%),
+        radial-gradient(200px 140px at 30% 80%, rgba(184,146,255,.18), transparent 60%),
+        linear-gradient(160deg, #1c1634, #0f0c1d 60%, #0d0b18);
+      position:relative; overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.35);
+    }
+    .tarot .moon{
+      position:absolute; right:10%; top:12%; width:20%;
+      filter: drop-shadow(0 2px 6px rgba(255,255,255,.35));
+    }
+    .tarot .caption{
+      position:absolute; left:0; right:0; bottom:14px; text-align:center; font-weight:800; letter-spacing:.3px;
+      text-transform: uppercase; font-size:14px; color:#ffdca8;
+    }
+
+    .cta-row{
+      display:flex; flex-wrap:wrap; gap:10px; margin-top: 4px;
+    }
+    .btn{
+      cursor:pointer; user-select:none;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 800;
+      letter-spacing: .3px;
+      text-decoration:none;
+      display:inline-flex; align-items:center; gap:8px;
+      transition: transform .06s ease, box-shadow .2s ease, opacity .2s ease, background .2s ease;
+      will-change: transform;
+      font-size: 16px;
+      background: rgba(255,255,255,.08);
+      color:#fff;
+    }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+    .btn:focus-visible{ outline: none; box-shadow: var(--ring); }
+    .btn-primary{
+      background: linear-gradient(180deg, #39d98a, #2ecc71);
+      color:#072; border-color: rgba(0,0,0,.15);
+      text-shadow: 0 1px 0 rgba(255,255,255,.25);
+      box-shadow: 0 6px 14px rgba(46,204,113,.35);
+    }
+    .btn-primary:hover{ opacity:.95; }
+    .btn-ghost{
+      background: rgba(255,255,255,.08);
+      color:#fff;
+      border-color: rgba(255,255,255,.18);
+    }
+    .btn-warning{
+      background: linear-gradient(180deg, var(--warning), #ffcc66);
+      color:#4a3b00;
+      border-color: rgba(0,0,0,.15);
+      box-shadow: 0 6px 14px rgba(255,209,102,.25);
+    }
+    .btn-danger{
+      background: linear-gradient(180deg, #ff8b8b, var(--danger));
+      color:#3c0000;
+      border-color: rgba(0,0,0,.15);
+      box-shadow: 0 6px 14px rgba(255,107,107,.25);
+    }
+
+    .progress-wrap{ margin:16px 0 10px; }
+    .progress{
+      height: 10px; background: rgba(255,255,255,.08);
+      border-radius:999px; overflow:hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+    .progress-bar{
+      height:100%; width:0%;
+      background: linear-gradient(90deg, #2ecc71, #b6f3d2);
+      transition: width .35s ease;
+    }
+
+    /* ---------------------------------------------------------
+       表單/題目（多選）- 大尺寸可點好操作
+       --------------------------------------------------------- */
+    .q{
+      margin: 8px 0 12px; font-size: 18px; font-weight: 800; color:#fff;
+      display:flex; align-items:center; gap:8px;
+    }
+    .opt{
+      display:flex; align-items:flex-start; gap:10px;
+      background: var(--glass);
+      border:1px solid rgba(255,255,255,.12);
+      padding: 12px; border-radius: 14px; margin: 10px 0;
+      transition: background .2s ease, border-color .2s ease, transform .08s ease;
+    }
+    .opt:hover{ background: rgba(255,255,255,.12); transform: translateY(-1px); }
+    .opt input[type="checkbox"]{ width:22px; height:22px; margin-top:2px; accent-color: var(--bs-primary); }
+    input, select, textarea { max-width: 100%; } /* 🔒重要規範：輸入元件不超出容器 */
+
+    .nav-row{ display:flex; justify-content:space-between; gap:10px; margin-top: 10px; }
+    .muted{ color: var(--muted); font-size: 14px; }
+
+    /* ---------------------------------------------------------
+       結果卡片
+       --------------------------------------------------------- */
+    .result-card{
+      background: linear-gradient(180deg, rgba(46,204,113,.14), rgba(184,146,255,.10));
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:18px; padding:14px; margin-top:10px;
+    }
+    .tag{
+      display:inline-block; padding:6px 10px; border-radius:999px;
+      background:rgba(255,255,255,.18); color:#fff; font-size:12px; margin: 0 6px 6px 0;
+    }
+
+    /* ---------------------------------------------------------
+       音樂控制（Web Audio）
+       --------------------------------------------------------- */
+    .audio-toggle{
+      position: fixed; right: 16px; bottom: 16px; z-index: 5;
+      border-radius: 999px; padding:10px 14px; font-weight:800; font-size:14px;
+      background: rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); color:#fff;
+      box-shadow: 0 6px 16px rgba(0,0,0,.3);
+      display:flex; align-items:center; gap:8px;
+    }
+
+    /* ---------------------------------------------------------
+       RWD 微調（平板以上將圖文左右排）
+       --------------------------------------------------------- */
+    @media(min-width: 768px){
+      .hero{
+        grid-template-columns: 1fr 1.1fr;
+        align-items:center;
+      }
+      .title{ font-size: 26px; }
+      body{ font-size: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 背景層：星空與霧氣（僅視覺用，不影響互動） -->
+  <div class="stars" aria-hidden="true"></div>
+  <div class="twinkle" aria-hidden="true"></div>
+  <div class="nebula" aria-hidden="true"></div>
+
+  <main class="wrap">
+    <section class="card" role="region" aria-label="身心靈瘦身小測驗卡片">
+      <div class="card-header">
+        <div class="coach">
+          <i class="bi bi-stars"></i>
+          <span>身心靈瘦身教練湘芸</span>
+          <span class="badge">Mystic Coach</span>
+        </div>
+        <div class="logo-chip" aria-hidden="true">
+          <i class="bi bi-moon-stars"></i> 塔羅星空風
+        </div>
+      </div>
+
+      <div class="card-body">
+        <!-- 首屏：塔羅卡與主標 -->
+        <div class="hero">
+          <div class="tarot" aria-hidden="true">
+            <!-- 神秘塔羅：月亮圖示（以SVG內嵌，無外聯） -->
+            <svg class="moon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <!-- 註解：使用漸層與高光，做出柔亮月亮 -->
+              <defs>
+                <radialGradient id="g" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#fffbe6"/>
+                  <stop offset="60%" stop-color="#ffe6a3"/>
+                  <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+                </radialGradient>
+              </defs>
+              <circle cx="50" cy="50" r="20" fill="url(#g)"/>
+            </svg>
+            <div class="caption">Tarot of Slim Soul ✦</div>
+          </div>
+
+          <div>
+            <h1 class="title">
+              <i class="bi bi-magic"></i> 身心靈瘦身小測驗
+            </h1>
+            <p class="muted">用 2–3 分鐘，瞭解你目前在「身×心×靈」減重旅程的傾向，拿到教練湘芸的客製建議 ✨</p>
+
+            <div class="cta-row">
+              <button id="btnStart" class="btn btn-primary">
+                <i class="bi bi-play-fill"></i> 開始測驗
+              </button>
+              <button id="btnReset" class="btn btn-ghost" disabled>
+                <i class="bi bi-arrow-counterclockwise"></i> 重新開始
+              </button>
+              <button id="btnSound" class="audio-toggle" aria-pressed="false" aria-label="切換音效">
+                <i class="bi bi-volume-up"></i> 音效：開
+              </button>
+            </div>
+
+            <!-- 進度條 -->
+            <div class="progress-wrap" aria-hidden="false" aria-label="作答進度">
+              <div class="progress"><div class="progress-bar" id="bar" style="width:0%"></div></div>
+              <div class="muted" id="progressText">尚未開始</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 題目區：以分頁呈現，行動裝置友善 -->
+        <form id="quiz" novalidate>
+          <!-- 設計說明：
+               1. 每一頁 1 題（多選），可上一步/下一步。
+               2. 每一選項帶權重：身(body)/心(mind)/靈(spirit)。
+               3. 完成後彙整最高分面向，輸出建議。 -->
+
+          <div id="qContainer"></div>
+
+          <div class="nav-row">
+            <button type="button" id="btnPrev" class="btn btn-ghost" disabled>
+              <i class="bi bi-arrow-left"></i> 上一步
+            </button>
+            <div style="display:flex; gap:10px;">
+              <button type="button" id="btnNext" class="btn btn-warning" disabled>
+                下一步 <i class="bi bi-arrow-right"></i>
+              </button>
+              <button type="submit" id="btnSubmit" class="btn btn-primary" disabled>
+                <i class="bi bi-emoji-sunglasses"></i> 看結果
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <!-- 結果區 -->
+        <div id="result" class="result-card" style="display:none;" tabindex="-1" aria-live="polite">
+          <h2 style="margin:0 0 8px; font-size:22px; font-weight:900;">
+            <i class="bi bi-award"></i> 你的身心靈瘦身傾向
+          </h2>
+          <div id="resultTags" style="margin-bottom:8px;"></div>
+          <p id="resultText" style="margin:6px 0 0;"></p>
+        </div>
+
+        <p class="muted" style="margin-top:12px;">
+          <i class="bi bi-shield-check"></i> 小提醒：此測驗僅作為自我覺察與建立行動方向之用，若有醫療需求請尋求專業協助喔。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* =========================================================
+       JS 互動邏輯
+       - RWD：表單區塊採單欄，手機易點
+       - 可及性：鍵盤導覽 / aria-live 在結果處播報
+       - 音效：Web Audio API 動態產生提示音/完成音
+       - 註解：重要步驟皆有中文說明，方便維護
+       ========================================================= */
+
+    // -----------------------------
+    // 題庫：每題多選，每個選項對身/心/靈加權
+    // -----------------------------
+    const QUESTIONS = [
+      {
+        title: "最近卡關最明顯的是？",
+        icon: "bi-flag",
+        options: [
+          { text: "睡不好、代謝感覺慢", w:{b:2,m:0,s:0} },
+          { text: "情緒容易波動、壓力大就想吃", w:{b:0,m:2,s:0} },
+          { text: "動力忽高忽低、容易放棄", w:{b:0,m:1,s:1} },
+        ]
+      },
+      {
+        title: "你偏好的運動風格？",
+        icon: "bi-bicycle",
+        options: [
+          { text: "規律重訓/肌力訓練", w:{b:2,m:0,s:0} },
+          { text: "瑜伽/伸展/呼吸",   w:{b:1,m:0,s:1} },
+          { text: "跟著心情走，想動就動", w:{b:0,m:0,s:2} },
+        ]
+      },
+      {
+        title: "面對誘惑食物的反應？",
+        icon: "bi-emoji-smile",
+        options: [
+          { text: "先吃蛋白質/纖維壓壓驚", w:{b:2,m:0,s:0} },
+          { text: "跟自己談判「只吃一口」", w:{b:0,m:2,s:0} },
+          { text: "尋找替代儀式（喝茶/散步）", w:{b:0,m:1,s:1} },
+        ]
+      },
+      {
+        title: "睡眠與作息的穩定度？",
+        icon: "bi-alarm",
+        options: [
+          { text: "固定時段上床起床", w:{b:2,m:0,s:0} },
+          { text: "看工作/心情變化", w:{b:0,m:1,s:1} },
+          { text: "時常報復性熬夜",   w:{b:0,m:2,s:0} },
+        ]
+      },
+      {
+        title: "面對挫折時你最需要的是？",
+        icon: "bi-heart",
+        options: [
+          { text: "明確的下一步行動清單", w:{b:1,m:1,s:0} },
+          { text: "情緒被理解與安放",     w:{b:0,m:2,s:0} },
+          { text: "重新連回內在動機",     w:{b:0,m:0,s:2} },
+        ]
+      },
+      {
+        title: "哪一種提醒你最買單？",
+        icon: "bi-bell",
+        options: [
+          { text: "數據導向（步數/卡路里）", w:{b:2,m:0,s:0} },
+          { text: "暖心鼓勵（夥伴/教練）",   w:{b:0,m:2,s:0} },
+          { text: "靜心語錄/願景板",         w:{b:0,m:0,s:2} },
+        ]
+      },
+      {
+        title: "想建立哪個新習慣？",
+        icon: "bi-stars",
+        options: [
+          { text: "餐前喝水與蔬菜先行", w:{b:2,m:0,s:0} },
+          { text: "寫三件感恩小事",     w:{b:0,m:1,s:1} },
+          { text: "每日 10 分鐘呼吸覺察", w:{b:0,m:0,s:2} },
+        ]
+      },
+      {
+        title: "你的理想教練風格是？",
+        icon: "bi-people",
+        options: [
+          { text: "科學派：計畫與追蹤", w:{b:2,m:0,s:0} },
+          { text: "陪伴派：情緒同在",   w:{b:0,m:2,s:0} },
+          { text: "靈感派：願景與儀式", w:{b:0,m:0,s:2} },
+        ]
+      }
+    ];
+
+    // 建立題目 DOM（一次產生完，分頁呈現）
+    const qContainer = document.getElementById('qContainer');
+    QUESTIONS.forEach((q, idx) => {
+      const page = document.createElement('section');
+      page.className = 'page';
+      page.style.display = 'none';
+      page.setAttribute('data-index', idx);
+
+      page.innerHTML = `
+        <div class="q"><i class="bi ${q.icon}"></i> Q${idx+1}. ${q.title}</div>
+        ${q.options.map((opt, i) => `
+          <label class="opt">
+            <input type="checkbox" name="q${idx}" value="${i}" />
+            <div>${opt.text}</div>
+          </label>
+        `).join('')}
+        <div class="muted">可複選，選擇符合你現況的 1–2 項</div>
+      `;
+      qContainer.appendChild(page);
+    });
+
+    // 狀態控制
+    const btnStart  = document.getElementById('btnStart');
+    const btnReset  = document.getElementById('btnReset');
+    const btnPrev   = document.getElementById('btnPrev');
+    const btnNext   = document.getElementById('btnNext');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const progressText = document.getElementById('progressText');
+    const bar = document.getElementById('bar');
+    const form = document.getElementById('quiz');
+    const result = document.getElementById('result');
+    const resultText = document.getElementById('resultText');
+    const resultTags = document.getElementById('resultTags');
+
+    let pageIndex = 0;
+    let started = false;
+
+    // -----------------------------
+    // Web Audio API：簡易提示音
+    // -----------------------------
+    const btnSound = document.getElementById('btnSound');
+    let audioEnabled = true;
+    let audioCtx = null;
+
+    function ping(freq=660, dur=0.08, type='sine', vol=0.04){
+      if(!audioEnabled) return;
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const t0 = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(vol, t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t0); o.stop(t0 + dur);
+    }
+    function chordOK(){
+      // 完成音：和弦小跳
+      setTimeout(()=>ping(523, .06, 'triangle', 0.05), 10);
+      setTimeout(()=>ping(659, .06, 'triangle', 0.05), 70);
+      setTimeout(()=>ping(783, .08, 'triangle', 0.05), 140);
+    }
+
+    btnSound.addEventListener('click', () => {
+      audioEnabled = !audioEnabled;
+      btnSound.setAttribute('aria-pressed', String(audioEnabled));
+      btnSound.innerHTML = audioEnabled
+        ? '<i class="bi bi-volume-up"></i> 音效：開'
+        : '<i class="bi bi-volume-mute"></i> 音效：關';
+      ping(480, .05, 'square', 0.03);
+    });
+
+    // -----------------------------
+    // 分頁控制與進度條
+    // -----------------------------
+    function showPage(i){
+      document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+      const target = document.querySelector(`.page[data-index="${i}"]`);
+      if(target) target.style.display = '';
+      pageIndex = i;
+
+      // 按鈕狀態
+      btnPrev.disabled = (i === 0);
+      btnNext.disabled = !hasAnyChecked(i);
+      btnSubmit.disabled = (i !== QUESTIONS.length - 1) || !hasAnyChecked(i);
+
+      // 進度
+      const percent = Math.round((i) / QUESTIONS.length * 100);
+      bar.style.width = `${percent}%`;
+      progressText.textContent = `第 ${i+1} / ${QUESTIONS.length} 題`;
+    }
+
+    function hasAnyChecked(i){
+      return !!document.querySelector(`input[name="q${i}"]:checked`);
+    }
+
+    function updateNextState(){
+      if(!started) return;
+      btnNext.disabled = !hasAnyChecked(pageIndex);
+      btnSubmit.disabled = (pageIndex !== QUESTIONS.length - 1) || !hasAnyChecked(pageIndex);
+    }
+
+    // 監聽所有 checkbox 以更新下一步狀態
+    form.addEventListener('change', (e)=>{
+      if(e.target && e.target.matches('input[type="checkbox"]')){
+        // 限制最多勾 2 個（可調整）
+        const name = e.target.name;
+        const checked = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`));
+        if(checked.length > 2){
+          e.target.checked = false;
+          ping(220, .06, 'square', 0.04); // 輕微警示
+          return;
+        }
+        updateNextState();
+        ping(700, .03, 'sine', 0.025);
+      }
+    });
+
+    // 開始、導航、重設
+    btnStart.addEventListener('click', ()=>{
+      started = true;
+      btnStart.disabled = true;
+      btnReset.disabled = false;
+      showPage(0);
+      chordOK();
+    });
+
+    btnPrev.addEventListener('click', ()=>{
+      if(pageIndex>0){ showPage(pageIndex-1); ping(500,.03); }
+    });
+    btnNext.addEventListener('click', ()=>{
+      if(pageIndex<QUESTIONS.length-1){ showPage(pageIndex+1); ping(720,.03); }
+    });
+
+    btnReset.addEventListener('click', ()=>{
+      // 清空作答
+      form.reset();
+      document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+      pageIndex = 0; started = false;
+      btnStart.disabled = false;
+      btnReset.disabled = true;
+      btnPrev.disabled = true;
+      btnNext.disabled = true;
+      btnSubmit.disabled = true;
+      bar.style.width = '0%';
+      progressText.textContent = '尚未開始';
+      result.style.display = 'none';
+      ping(320,.05,'sawtooth',0.03);
+    });
+
+    // 初始：尚未開始，隱藏題頁
+    document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+
+    // 提交計分
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      // 累計加權
+      const score = { b:0, m:0, s:0 }; // body / mind / spirit
+      QUESTIONS.forEach((q, i)=>{
+        const checks = Array.from(document.querySelectorAll(`input[name="q${i}"]:checked`));
+        checks.forEach(c=>{
+          const idx = Number(c.value);
+          const w = q.options[idx].w;
+          score.b += w.b; score.m += w.m; score.s += w.s;
+        });
+      });
+
+      // 判斷最高面向
+      const entries = Object.entries(score); // [['b',..],['m',..],['s',..]]
+      entries.sort((a,b)=>b[1]-a[1]);
+      const [topKey, topVal] = entries[0];
+      const total = score.b + score.m + score.s;
+
+      // 產生標籤
+      resultTags.innerHTML = `
+        <span class="tag"><i class="bi bi-lightning"></i> 身：${score.b}</span>
+        <span class="tag"><i class="bi bi-emoji-heart-eyes"></i> 心：${score.m}</span>
+        <span class="tag"><i class="bi bi-moon"></i> 靈：${score.s}</span>
+        <span class="tag"><i class="bi bi-bar-chart"></i> 總和：${total}</span>
+      `;
+
+      // 依傾向提供建議
+      const advice = {
+        b: {
+          title: "身體面向偏高",
+          text: "你對於作息、營養與運動的規律度相對到位！可嘗試「週期化訓練」與「蛋白質定額」；若遇停滯，可用 NEAT（非運動性活動）與睡眠品質優化破 plateau。"
+        },
+        m: {
+          title: "心理面向偏高",
+          text: "你對自我對話/壓力調節很敏感。建議設計微小但可持續的獎勵迴路（例如完成清單＋貼紙回饋），並建立觸發—行動—獎賞的『情緒替代方案』。"
+        },
+        s: {
+          title: "靈性面向偏高",
+          text: "你的動機來自願景與價值感。每日 10 分鐘呼吸覺察、寫下今天的『對齊行動』1 件事；用儀式化（音樂/香氛/語錄）把練習嵌入生活節奏。"
+        }
+      };
+
+      const mapName = { b:"身", m:"心", s:"靈" };
+
+      resultText.innerHTML = `
+        <strong>${advice[topKey].title}</strong>（最高分：${mapName[topKey]}）
+        <br>${advice[topKey].text}
+        <br><br>
+        <em class="muted">教練湘芸小叮嚀：</em> 如果三者分數接近，代表你是「均衡型」，恭喜你可以用『每週一主題』輪流打點三面向，維持彈性與趣味！
+      `;
+
+      // 顯示結果與完成音
+      result.style.display = '';
+      result.focus();
+      bar.style.width = '100%';
+      progressText.textContent = `完成！共 ${QUESTIONS.length} 題`;
+      chordOK();
+    });
+
+    // 輸入法則：進入每頁時檢查
+    qContainer.addEventListener('click', (e)=>{
+      if(e.target.matches('input[type="checkbox"]')){
+        updateNextState();
+      }
+    });
+
+    // 初次載入：讓開始鈕易於發現
+    window.addEventListener('load', ()=>{
+      btnStart.focus();
+    });
+  </script>
+</body>
+</html>

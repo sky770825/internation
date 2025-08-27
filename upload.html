@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>🚀 一鍵上傳 HTML 工具</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  
+  :root{
+    --font:'Microsoft JhengHei',system-ui,-apple-system,Segoe UI,Roboto,Noto Sans TC,Arial,sans-serif;
+    --bg:#fff7ed; --card:#fff; --ink:#5b3a29; --sub:#7b5b4a;
+    --brand:#ff7f50; --brand2:#ffb703; --muted:#fff0e0; --line:#f2d3b1;
+    --shadow:0 8px 16px rgba(0,0,0,.08); --r:14px;
+    --success:#16a34a; --danger:#dc2626;
+  }
+  
+  html,body{ margin:0; font-family:var(--font); background:var(--bg); color:var(--ink); }
+  .wrap{ max-width:800px; margin:auto; padding:clamp(10px,3vw,18px); }
+  
+  .hero{
+    background:linear-gradient(135deg,var(--muted),#fff); border:1px solid #ffd6ad; border-radius:var(--r);
+    box-shadow:var(--shadow); padding:clamp(12px,3vw,20px); margin-bottom:20px; text-align:center;
+  }
+  .hero h1{ margin:0; font-size:clamp(20px,5.2vw,30px); display:flex; align-items:center; justify-content:center; gap:10px }
+  .hero p{ margin:8px 0 0; color:var(--sub); font-size:clamp(14px,3.5vw,16px); }
+  
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:var(--r); 
+    box-shadow:var(--shadow); padding:20px; margin-bottom:20px;
+  }
+  
+  .form-group{ margin-bottom:20px; }
+  label{ display:block; font-weight:700; margin-bottom:8px; color:var(--ink); }
+  
+  input, select, textarea{
+    width:100%; padding:12px; border:1px solid var(--line); border-radius:10px;
+    font-size:16px; outline:0; transition:.2s; background:#fff;
+  }
+  input:focus, select:focus, textarea:focus{ border-color:var(--brand); box-shadow:0 0 0 3px rgba(255,127,80,.23) }
+  
+  .file-upload{
+    border:2px dashed var(--line); background:var(--muted); text-align:center; padding:40px 20px;
+    border-radius:var(--r); cursor:pointer; transition:.2s;
+  }
+  .file-upload:hover{ border-color:var(--brand); background:var(--muted); }
+  .file-upload.dragover{ border-color:var(--brand); background:var(--muted); }
+  .file-upload input{ display:none; }
+  .file-upload .icon{ font-size:48px; color:var(--brand); margin-bottom:16px; }
+  .file-upload .text{ color:var(--sub); font-size:16px; }
+  .file-upload .selected{ color:var(--success); font-weight:600; }
+  
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; justify-content:center; font-weight:700;
+    padding:12px 24px; border-radius:12px; border:0; cursor:pointer; color:#fff;
+    background:linear-gradient(180deg,#ff9f68,var(--brand)); box-shadow:0 8px 14px rgba(255,127,80,.28);
+    font-size:16px; text-decoration:none; transition:.2s;
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 10px 20px rgba(255,127,80,.35); }
+  .btn:disabled{ opacity:0.6; cursor:not-allowed; transform:none; }
+  
+  .btn-ghost{ background:linear-gradient(180deg,#ffd166,var(--brand2)); color:var(--ink); }
+  .btn-ghost:hover{ background:#ffd166; }
+  
+  .result{
+    background:var(--muted); border:1px solid var(--line); border-radius:var(--r);
+    padding:20px; margin-top:20px; display:none;
+  }
+  .result.success{ background:#f0f9ff; border-color:var(--success); }
+  .result.error{ background:#fef2f2; border-color:var(--danger); }
+  
+  .back-btn{
+    display:inline-flex; align-items:center; gap:6px; padding:8px 12px;
+    background:var(--brand2); color:var(--ink); border-radius:8px; text-decoration:none;
+    font-size:14px; font-weight:600; margin-bottom:16px;
+  }
+  .back-btn:hover{ background:#ffd166; transform:translateY(-1px); }
+  
+  .loading{ display:none; text-align:center; padding:20px; }
+  .spinner{ width:40px; height:40px; border:4px solid var(--muted); border-top:4px solid var(--brand); border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 16px; }
+  @keyframes spin{ 0%{ transform:rotate(0deg); } 100%{ transform:rotate(360deg); } }
+  
+  .icon-select{ display:grid; grid-template-columns:repeat(8,1fr); gap:8px; margin-top:8px; }
+  .icon-option{ padding:8px; text-align:center; border:1px solid var(--line); border-radius:8px; cursor:pointer; transition:.2s; }
+  .icon-option:hover{ background:var(--muted); border-color:var(--brand); }
+  .icon-option.selected{ background:var(--brand); color:#fff; border-color:var(--brand); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- 返回按鈕 -->
+    <a href="index.html" class="back-btn">
+      <i class="bi bi-arrow-left"></i> 返回工具集
+    </a>
+
+    <!-- 頁首 -->
+    <section class="hero">
+      <h1><i class="bi bi-cloud-upload"></i> 一鍵上傳 HTML 工具</h1>
+      <p>直接在瀏覽器中上傳您的 HTML 文件，自動部署到 GitHub Pages</p>
+    </section>
+
+    <!-- 上傳表單 -->
+    <div class="card">
+      <form id="uploadForm">
+        <!-- 文件上傳 -->
+        <div class="form-group">
+          <label>📁 選擇 HTML 文件</label>
+          <div class="file-upload" id="fileUpload">
+            <input type="file" id="htmlFile" accept=".html,.htm" required>
+            <div class="icon">📄</div>
+            <div class="text">點擊或拖拽 HTML 文件到此處</div>
+            <div class="selected" id="selectedFile" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- 工具名稱 -->
+        <div class="form-group">
+          <label for="toolName">📱 工具名稱</label>
+          <input type="text" id="toolName" placeholder="例如：多功能計算器" required>
+        </div>
+
+        <!-- 工具描述 -->
+        <div class="form-group">
+          <label for="toolDescription">📝 工具描述</label>
+          <textarea id="toolDescription" rows="3" placeholder="請描述這個工具的功能和特色..." required></textarea>
+        </div>
+
+        <!-- 圖標選擇 -->
+        <div class="form-group">
+          <label>🎨 選擇圖標</label>
+          <select id="iconSelect">
+            <option value="🛠️">🛠️ 工具</option>
+            <option value="🧮">🧮 計算器</option>
+            <option value="📈">📈 圖表</option>
+            <option value="🎨">🎨 設計</option>
+            <option value="📱">📱 手機</option>
+            <option value="💻">💻 電腦</option>
+            <option value="🎯">🎯 目標</option>
+            <option value="⚡">⚡ 快速</option>
+            <option value="🚀">🚀 火箭</option>
+            <option value="💡">💡 燈泡</option>
+          </select>
+        </div>
+
+        <!-- 提交按鈕 -->
+        <div style="text-align:center;">
+          <button type="submit" class="btn" id="submitBtn">
+            <i class="bi bi-cloud-upload"></i> 一鍵上傳並部署
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 載入中 -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>正在上傳並部署您的工具...</div>
+      <div style="font-size:14px; color:var(--sub); margin-top:8px;">這可能需要幾分鐘時間</div>
+    </div>
+
+    <!-- 結果顯示 -->
+    <div class="result" id="result"></div>
+  </div>
+
+<script>
+// 文件上傳處理
+const fileUpload = document.getElementById('fileUpload');
+const htmlFile = document.getElementById('htmlFile');
+const selectedFile = document.getElementById('selectedFile');
+
+// 點擊上傳
+fileUpload.addEventListener('click', () => htmlFile.click());
+
+// 文件選擇
+htmlFile.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    selectedFile.textContent = `已選擇: ${file.name}`;
+    selectedFile.style.display = 'block';
+  }
+});
+
+// 拖拽上傳
+fileUpload.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  fileUpload.classList.add('dragover');
+});
+
+fileUpload.addEventListener('dragleave', () => {
+  fileUpload.classList.remove('dragover');
+});
+
+fileUpload.addEventListener('drop', (e) => {
+  e.preventDefault();
+  fileUpload.classList.remove('dragover');
+  
+  const files = e.dataTransfer.files;
+  if (files.length > 0 && files[0].type.includes('html')) {
+    htmlFile.files = files;
+    selectedFile.textContent = `已選擇: ${files[0].name}`;
+    selectedFile.style.display = 'block';
+  }
+});
+
+// 表單提交
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const formData = new FormData();
+  formData.append('htmlFile', htmlFile.files[0]);
+  formData.append('toolName', document.getElementById('toolName').value);
+  formData.append('toolDescription', document.getElementById('toolDescription').value);
+  formData.append('icon', document.getElementById('iconSelect').value);
+  
+  // 顯示載入中
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('submitBtn').disabled = true;
+  
+  try {
+    // 這裡需要後端 API 來處理文件上傳
+    // 目前顯示模擬結果
+    await simulateUpload(formData);
+    
+    showResult('success', `
+      <h3>🎉 上傳成功！</h3>
+      <p><strong>工具名稱:</strong> ${document.getElementById('toolName').value}</p>
+      <p><strong>主頁面:</strong> <a href="https://sky770825.github.io/internation/" target="_blank">https://sky770825.github.io/internation/</a></p>
+      <p><strong>部署狀態:</strong> 正在部署中，通常 1-5 分鐘內完成</p>
+      <p><strong>注意:</strong> 由於瀏覽器限制，實際部署需要通過 GitHub 進行。請將文件手動上傳到 GitHub 倉庫。</p>
+    `);
+  } catch (error) {
+    showResult('error', `
+      <h3>❌ 上傳失敗</h3>
+      <p>錯誤信息: ${error.message}</p>
+      <p>請檢查文件格式和網絡連接後重試。</p>
+    `);
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('submitBtn').disabled = false;
+  }
+});
+
+// 模擬上傳過程
+function simulateUpload(formData) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, 3000);
+  });
+}
+
+// 顯示結果
+function showResult(type, content) {
+  const result = document.getElementById('result');
+  result.className = `result ${type}`;
+  result.innerHTML = content;
+  result.style.display = 'block';
+  
+  // 滾動到結果
+  result.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

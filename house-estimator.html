@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8" />
+  <!-- ✅ 自動調節縮放、iOS 瀏海安全區 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>🏠 房產費用智慧估算中心（無圖表版）</title>
+
+  <!-- 圖示字型：Bootstrap Icons + Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* ----------------------------------------------------------
+       Bootswatch-like（子集）主題 + RWD/穩定滑動/不換行優化
+       ---------------------------------------------------------- */
+    :root{
+      --base-fz: clamp(14px, 1.6vw, 17px);
+      --brand-1:#0abf9e;   /* 綠松石 */
+      --brand-2:#ffb703;   /* 暖黃 */
+      --brand-3:#f17b5f;   /* 橘紅 */
+      --brand-4:#36a2eb;   /* 藍 */
+      --bg-1:#fdfcf8;
+      --text-1:#24323f;
+      --muted:#6b7a86;
+      --card:#ffffff;
+      --ring:#9debdc;
+      --container-max: 1200px;
+    }
+
+    html{
+      font-size: var(--base-fz);
+      -webkit-text-size-adjust: 100%;
+    }
+    body{
+      font-family: "Microsoft JhengHei","Noto Sans TC",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"PingFang TC","Heiti TC","儷黑 Pro",sans-serif;
+      color: var(--text-1);
+      background: radial-gradient(1200px 800px at 10% -10%, #e7fff7 0%, transparent 60%),
+                  radial-gradient(1200px 800px at 110% 10%, #fff6d8 0%, transparent 60%),
+                  var(--bg-1);
+      line-height: 1.5;
+      /* ✅ 固定框架＋穩定滑動 */
+      overflow-y: scroll;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      margin: 0;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    /* ✅ 盒模型／輸入元件不超出容器（規範必要） */
+    * { box-sizing: border-box; }
+    input, select, textarea { max-width: 100%; font-size: 16px; } /* 16px 防 iOS 聚焦放大 */
+
+    .container{ max-width: var(--container-max); margin: 0 auto; padding: 20px clamp(12px, 4vw, 24px); }
+
+    .page-title{ text-align:center; margin-bottom: 18px; }
+    .page-title h1{
+      font-size: clamp(22px, 4.2vw, 40px);
+      margin: 8px 0 6px; font-weight: 800;
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      letter-spacing: .5px;
+    }
+    .page-title p{ color: var(--muted); font-size: clamp(13px, 1.8vw, 16px); }
+
+    .switcher{
+      display:flex; gap: 8px; justify-content:center; margin: 12px 0 22px;
+      background: #fff; padding: 8px; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.06);
+    }
+    .btn{
+      border: none; padding: clamp(10px, 2.2vw, 12px) clamp(14px, 3vw, 18px); border-radius: 10px; cursor: pointer; font-weight: 700;
+      transition: .2s ease; display: inline-flex; align-items:center; gap: 8px;
+    }
+    .btn:focus{ outline: 3px solid var(--ring); outline-offset: 2px; }
+    .btn-ghost{ background: transparent; color: var(--muted); }
+    .btn-ghost:hover{ background: #f2f4f6; color: var(--text-1); }
+    .btn-green{ background: var(--brand-1); color: #fff; }
+    .btn-green:hover{ filter: brightness(.95); transform: translateY(-1px); }
+    .btn-gray{ background: #768a9a; color: #fff; }
+    .btn-gray:hover{ filter: brightness(.95); }
+
+    .grid{ display: grid; gap: 16px; grid-template-columns: 1fr; }
+    @media (min-width: 992px){ .grid{ grid-template-columns: 1fr 1fr; } }
+
+    .card{
+      background: var(--card); border-radius: 16px; padding: clamp(16px, 3.4vw, 20px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    }
+    .card h2{ font-size: clamp(18px, 2.6vw, 22px); font-weight: 800; margin: 0 0 6px; display:flex; align-items:center; gap:10px; }
+    .subtle{ color: var(--muted); margin-bottom: 12px; font-size: clamp(13px,1.8vw,15px); }
+
+    /* 表單 */
+    .form-row{ display: grid; gap: 12px; grid-template-columns: 1fr; margin-bottom: 12px; }
+    @media (min-width: 600px){ .form-row.cols-2{ grid-template-columns: 1fr 1fr; } }
+    .form-group label{ display:block; font-size: 14px; color: #415363; margin-bottom: 6px; font-weight: 600; }
+    .input, .select{
+      width: 100%; padding: 12px 14px; border: 1px solid #d8e2ea; border-radius: 10px;
+      outline: none; transition: .15s border, .15s box-shadow; background: #fff;
+    }
+    .input:focus, .select:focus{ border-color: var(--brand-1); box-shadow: 0 0 0 4px #d6faf1; }
+
+    .section-toggle{
+      width: 100%; border-radius: 10px; padding: 10px 14px; text-align: left;
+      background: #fff6d8; color: #7a4c00; border: 1px solid #ffe6a7;
+      font-weight: 700;
+    }
+    .toggle-panel{ margin-top: 12px; background:#f6fafb; border:1px dashed #d1e8ef; padding:14px; border-radius:12px; }
+
+    /* 結果重點數字（置中、超大、粗體＋不同色） */
+    .hero-number{ font-size: clamp(26px, 6.2vw, 48px); font-weight: 900; color: var(--brand-1); text-shadow: 0 2px 0 rgba(0,0,0,.05); }
+    .hero-number.blue{ color: var(--brand-4); }
+    .hero-note{ color: #3b4a57; opacity: .9; font-size: clamp(13px,1.8vw,15px); }
+    .badge{
+      display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      background: #e8fff9; color:#0f6b5b; border:1px solid #b9f5e9;
+    }
+
+    .kpi-grid{ display:grid; gap:12px; grid-template-columns: 1fr; }
+    @media (min-width: 700px){ .kpi-grid{ grid-template-columns: 1fr 1fr; } }
+    .kpi{ background:#f8fbfd; border:1px solid #e5eef5; border-radius: 12px; padding: 12px; }
+    .kpi .label{ color:#6c7c89; font-size: 13px; }
+    .kpi .value{ font-weight: 800; font-size: clamp(16px, 2vw, 20px); }
+
+    /* CTA：官方帳號一行顯示、不換行、可水平滑動 */
+    .cta{ margin-top:16px; text-align:center; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .cta a{
+      display:inline-flex; align-items:center; gap:10px; padding: 14px 18px;
+      background: var(--brand-1); color:#fff; border-radius:12px; font-weight:800;
+      box-shadow: 0 10px 24px rgba(10,191,158,.25);
+      transition: .2s; transform: translateZ(0);
+      white-space: nowrap; width: max-content;
+      font-size: clamp(12px, 1.8vw, 16px); text-decoration: none;
+    }
+    .cta a:hover{ filter: brightness(.95); transform: translateY(-1px); }
+
+    /* 溫馨提醒 */
+    .note{ background:#fff8e8; border:1px solid #ffe3a9; border-radius:14px; padding:16px; margin-top:20px; }
+    .note h3{ margin:0 0 8px; }
+    .note ul{ margin:0; padding-left: 1em; color:#7a5b00; }
+
+    .hidden{ display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <!-- 標題區 -->
+    <div class="page-title">
+      <h1><i class="bi bi-house-heart-fill" style="color:#ff7b54"></i> 房產費用智慧估算中心</h1>
+      <p>買方賣方一站式服務，精準計算您的房產財務規劃</p>
+    </div>
+
+    <!-- 模式切換 -->
+    <div class="switcher" role="tablist" aria-label="模式切換">
+      <button id="btnBuyer" class="btn btn-green" aria-selected="true">
+        <i class="bi bi-calculator"></i> 我是買方
+      </button>
+      <button id="btnSeller" class="btn btn-ghost" aria-selected="false">
+        <i class="bi bi-graph-up-arrow"></i> 我是賣方
+      </button>
+    </div>
+
+    <div class="grid">
+      <!-- 輸入卡片 -->
+      <section class="card" id="cardInputs" aria-labelledby="formTitle">
+        <h2 id="formTitle"><i class="bi bi-calculator-fill" style="color:var(--brand-1)"></i> <span id="formTitleText">買方費用估算</span></h2>
+        <p class="subtle" id="formSubtitle">計算購屋所需的總自備款與相關費用</p>
+
+        <!-- 買方表單 -->
+        <form id="formBuyer">
+          <div class="form-row">
+            <div class="form-group">
+              <label>房屋總價（萬元）</label>
+              <input id="bHousePrice" type="number" class="input" placeholder="請輸入房屋總價（萬元）">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>貸款成數</label>
+              <div>
+                <label><input type="radio" name="bLoanRatio" value="75"> 75成</label>&nbsp;&nbsp;
+                <label><input type="radio" name="bLoanRatio" value="80" checked> 80成</label>&nbsp;&nbsp;
+                <label><input type="radio" name="bLoanRatio" value="85"> 85成</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label>貸款年期</label>
+              <select id="bLoanYears" class="select">
+                <option value="20">20年</option>
+                <option value="30" selected>30年</option>
+                <option value="40">40年</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年利率（%）</label>
+              <input id="bInterest" type="number" step="0.1" class="input" value="2.1">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>寬限期（年）</label>
+              <input id="bGraceYears" type="number" class="input" placeholder="可留白">
+            </div>
+          </div>
+
+          <!-- 雜費（可選） -->
+          <button class="section-toggle" type="button" data-target="#buyerMisc">雜項費用（可選填）</button>
+          <div id="buyerMisc" class="toggle-panel hidden">
+            <div class="form-row cols-2">
+              <div class="form-group"><label>服務費（NT$）</label><input id="bServiceFee" type="number" class="input"></div>
+              <div class="form-group"><label>代書費（NT$）</label><input id="bNotaryFee" type="number" class="input"></div>
+              <div class="form-group"><label>仲介費（NT$）</label><input id="bAgentFee" type="number" class="input"></div>
+              <div class="form-group"><label>契稅（NT$）</label><input id="bContractTax" type="number" class="input"></div>
+              <div class="form-group"><label>地政規費（NT$）</label><input id="bRegFee" type="number" class="input"></div>
+              <div class="form-group"><label>火險/地震險（NT$）</label><input id="bInsurance" type="number" class="input"></div>
+            </div>
+          </div>
+        </form>
+
+        <!-- 賣方表單 -->
+        <form id="formSeller" class="hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label>房屋成交總價（萬元）</label>
+              <input id="sSalePrice" type="number" class="input" placeholder="請輸入成交總價（萬元）">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>當初購買總價（萬元）</label>
+              <input id="sPurchasePrice" type="number" class="input" placeholder="請輸入購買總價（萬元）">
+            </div>
+          </div>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label>取得日期</label>
+              <input id="sPurchaseDate" type="date" class="input">
+            </div>
+            <div class="form-group">
+              <label>轉移日期</label>
+              <input id="sSaleDate" type="date" class="input">
+            </div>
+          </div>
+
+          <!-- 自住優惠條件 -->
+          <div class="toggle-panel" style="background:#eef8ff; border-color:#cfe7ff">
+            <strong class="badge"><i class="fa-solid fa-house-chimney"></i> 自住優惠條件</strong>
+            <div class="form-row">
+              <label><input id="sOwner" type="checkbox"> 為本人／配偶／未成年子女自住</label>
+              <label><input id="sResidence" type="checkbox"> 設籍且連續持有滿 6 年</label>
+              <label><input id="sRented" type="checkbox"> 交易前 6 年內曾出租或做營業使用（若有請打勾）</label>
+            </div>
+          </div>
+
+          <div class="form-row cols-2">
+            <div class="form-group">
+              <label>改良費用（NT$）</label>
+              <input id="sImprove" type="number" class="input" placeholder="裝修等費用">
+            </div>
+            <div class="form-group">
+              <label>土地漲價總數額（NT$）</label>
+              <input id="sLVI" type="number" class="input" placeholder="由機關提供">
+            </div>
+          </div>
+
+          <!-- 雜費（可選） -->
+          <button class="section-toggle" type="button" data-target="#sellerMisc">雜項費用（可選填）</button>
+          <div id="sellerMisc" class="toggle-panel hidden">
+            <div class="form-row cols-2">
+              <div class="form-group"><label>仲介服務費率（%）</label><input id="sAgentRate" type="number" step="0.1" class="input" value="2"></div>
+              <div class="form-group"><label>代書費（NT$）</label><input id="sNotary" type="number" class="input" value="15000"></div>
+              <div class="form-group"><label>契稅（NT$）</label><input id="sContract" type="number" class="input"></div>
+              <div class="form-group"><label>印花稅（NT$）</label><input id="sStamp" type="number" class="input"></div>
+              <div class="form-group"><label>公證費（NT$）</label><input id="sCert" type="number" class="input"></div>
+              <div class="form-group"><label>房貸清償餘額（NT$）</label><input id="sPayoff" type="number" class="input"></div>
+              <div class="form-group"><label>其他費用（NT$）</label><input id="sOther" type="number" class="input"></div>
+            </div>
+          </div>
+        </form>
+
+        <!-- 動作按鈕 -->
+        <div style="display:flex; gap:10px; margin-top: 12px;">
+          <button id="btnCalc" class="btn btn-green" style="flex:1"><i class="bi bi-play-fill"></i> 開始估算</button>
+          <button id="btnClear" class="btn btn-gray" style="flex:1"><i class="bi bi-arrow-counterclockwise"></i> 清除重填</button>
+        </div>
+      </section>
+
+      <!-- 結果卡片（移除圖表，改以重點數字＋卡片列出） -->
+      <section class="card" id="cardResults">
+        <h2><i class="bi bi-stars" style="color:var(--brand-2)"></i> 您的估算結果</h2>
+        <div id="placeholder" class="subtle" style="text-align:center; padding: 26px 6px;">
+          <i class="bi bi-calculator" style="font-size:56px; opacity:.35;"></i>
+          <p>請填寫左側資訊並點擊「開始估算」</p>
+        </div>
+
+        <!-- 買方結果（無長條圖） -->
+        <div id="buyerResults" class="hidden">
+          <div class="kpi" style="text-align:center; background: linear-gradient(180deg,#e8fff9,#ffffff 60%); border-color:#c8f3e9;">
+            <div class="label">總自備款</div>
+            <div class="hero-number">NT$ <span id="bHeroDown">-</span> 元</div>
+            <div class="hero-note">貸款金額：NT$ <strong id="bHeroLoan">-</strong> 元</div>
+          </div>
+
+          <!-- 以卡片清楚呈現三種成數 -->
+          <div class="kpi-grid" id="bDetailGrid"></div>
+        </div>
+
+        <!-- 賣方結果（移除圓餅圖） -->
+        <div id="sellerResults" class="hidden">
+          <div class="kpi" style="text-align:center; background: linear-gradient(180deg,#eef6ff,#ffffff 60%); border-color:#d7e7ff;">
+            <div class="label">資金取回總額</div>
+            <div class="hero-number blue">NT$ <span id="sHeroNet">-</span> 元</div>
+            <div class="hero-note">
+              持有期間：<span id="sYears">-</span> 年 |
+              適用稅率：<span id="sRate">-</span>
+              <div id="sBadge" class="badge hidden" style="margin-top:6px;">✓ 符合自住優惠條件</div>
+              <div id="sExempt" class="hidden" style="color:#0d7c68; font-weight:700; margin-top:6px;">免稅額度：NT$ <span id="sExemptAmt"></span> 元</div>
+            </div>
+          </div>
+
+          <!-- 用四格 KPI 卡片呈現關鍵費用 -->
+          <div class="kpi-grid">
+            <div class="kpi"><div class="label">成交總價</div><div class="value" id="sSale">-</div></div>
+            <div class="kpi"><div class="label">出售獲利（課稅所得）</div><div class="value" id="sTaxable">-</div></div>
+            <div class="kpi"><div class="label">房地合一稅</div><div class="value" id="sCGT">-</div></div>
+            <div class="kpi"><div class="label">仲介費</div><div class="value" id="sAgent">-</div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- CTA：官方帳號固定單行 -->
+    <div class="cta" aria-label="加入 LINE 官方帳號（可水平滑動）">
+      <a href="https://lin.ee/9GV0YQ1D" target="_blank" rel="noopener">
+        <i class="fa-brands fa-line"></i>
+        <span>住商楊梅大順店 - 子菲、濬瑒官方帳號</span>
+      </a>
+      <div class="subtle" style="margin-top:6px;">專業房屋貸款諮詢服務，歡迎加入 LINE 洽詢</div>
+    </div>
+
+    <!-- 溫馨提醒 -->
+    <div class="note">
+      <h3><i class="bi bi-lightbulb-fill" style="color:#e6a200"></i> 溫馨提醒</h3>
+      <ul>
+        <li>以上為試算結果，實際貸款條件與利率仍須以各家銀行審核為準。</li>
+        <li>房屋稅、地價稅、管理費等持有成本未列入計算，請一併考量。</li>
+        <li>房地合一稅計算僅供參考，實際稅額請洽詢稅務專業人士。</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================
+       🧠 計算邏輯（移除所有 Chart.js、canvas）
+       - 保留：三種貸款成數的明細卡片
+       ========================================================== */
+    const nf = new Intl.NumberFormat('zh-TW');
+    const fmt = n => nf.format(Math.round(n ?? 0));
+    let mode = 'buyer';
+    const $ = s => document.querySelector(s);
+
+    // 折疊面板：雜項費用
+    document.querySelectorAll('.section-toggle').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const target = btn.getAttribute('data-target');
+        document.querySelector(target).classList.toggle('hidden');
+      });
+    });
+
+    // 模式切換（買／賣）
+    $('#btnBuyer').addEventListener('click', ()=>{
+      mode='buyer';
+      $('#btnBuyer').className='btn btn-green';
+      $('#btnSeller').className='btn btn-ghost';
+      $('#formBuyer').classList.remove('hidden');
+      $('#formSeller').classList.add('hidden');
+      $('#formTitleText').textContent='買方費用估算';
+      $('#formSubtitle').textContent='計算購屋所需的總自備款與相關費用';
+      resetResults();
+    });
+    $('#btnSeller').addEventListener('click', ()=>{
+      mode='seller';
+      $('#btnBuyer').className='btn btn-ghost';
+      $('#btnSeller').className='btn btn-green';
+      $('#formBuyer').classList.add('hidden');
+      $('#formSeller').classList.remove('hidden');
+      $('#formTitleText').textContent='賣方費用估算';
+      $('#formSubtitle').textContent='計算售屋所需的總支出與相關費用';
+      resetResults();
+    });
+
+    // 清除重填
+    $('#btnClear').addEventListener('click', ()=>{
+      if(mode==='buyer'){
+        $('#formBuyer').reset();
+        $('#bInterest').value = 2.1;
+        document.querySelector('input[name="bLoanRatio"][value="80"]').checked = true;
+        $('#buyerMisc').classList.add('hidden');
+      }else{
+        $('#formSeller').reset();
+        $('#sAgentRate').value = 2;
+        $('#sNotary').value = 15000;
+        $('#sellerMisc').classList.add('hidden');
+      }
+      resetResults();
+    });
+
+    function resetResults(){
+      $('#placeholder').classList.remove('hidden');
+      $('#buyerResults').classList.add('hidden');
+      $('#sellerResults').classList.add('hidden');
+    }
+
+    // 主按鈕
+    $('#btnCalc').addEventListener('click', ()=>{ mode==='buyer' ? runBuyer() : runSeller(); });
+
+    /* ==========================
+       買方計算
+       ========================== */
+    function calcBuyerLoan(priceWan, ratio, loanYears, interestRate, graceYears, misc){
+      const priceNT = parseFloat(priceWan) * 10000;
+      const loanAmount = priceNT * (parseFloat(ratio)/100);
+      const downPayment = priceNT - loanAmount;
+
+      const totalMisc = Object.values(misc).reduce((s,v)=> s + (parseFloat(v)||0), 0);
+      const totalDown = downPayment + totalMisc;
+
+      const monthlyRate = parseFloat(interestRate)/100/12;
+      const totalMonths = parseInt(loanYears)*12;
+      const graceMonths = parseInt(graceYears)||0;
+
+      let monthlyPayment = 0;
+      if(monthlyRate>0){
+        const pow = Math.pow(1+monthlyRate, totalMonths);
+        monthlyPayment = loanAmount * monthlyRate * pow / (pow - 1);
+      }else{
+        monthlyPayment = loanAmount / totalMonths;
+      }
+      const gracePayment = loanAmount * monthlyRate;
+      const totalInterest = (monthlyPayment * (totalMonths - graceMonths)) + (gracePayment * graceMonths) - loanAmount;
+      const totalRepayment = loanAmount + totalInterest;
+
+      return {
+        loanAmount: loanAmount/10000,
+        downPayment: downPayment/10000,
+        totalDownPayment: totalDown/10000,
+        totalMiscFees: totalMisc/10000,
+        monthlyPayment: Math.round(monthlyPayment),
+        gracePayment: Math.round(gracePayment),
+        totalInterest: totalInterest/10000,
+        totalRepayment: totalRepayment/10000
+      };
+    }
+
+    function runBuyer(){
+      const priceWan = parseFloat($('#bHousePrice').value);
+      if(!priceWan || priceWan<=0){ alert('請輸入有效的房屋總價'); return; }
+
+      const loanYears = $('#bLoanYears').value;
+      const interest = $('#bInterest').value;
+      const graceYears = $('#bGraceYears').value || 0;
+      const misc = {
+        serviceFee: $('#bServiceFee').value,
+        notaryFee: $('#bNotaryFee').value,
+        agentFee: $('#bAgentFee').value,
+        contractTax: $('#bContractTax').value,
+        registrationFee: $('#bRegFee').value,
+        insurance: $('#bInsurance').value
+      };
+
+      const results = {
+        '75': calcBuyerLoan(priceWan, '75', loanYears, interest, graceYears, misc),
+        '80': calcBuyerLoan(priceWan, '80', loanYears, interest, graceYears, misc),
+        '85': calcBuyerLoan(priceWan, '85', loanYears, interest, graceYears, misc),
+      };
+
+      // KPI（以 8 成為主）
+      $('#bHeroDown').textContent = fmt(results['80'].totalDownPayment*10000);
+      $('#bHeroLoan').textContent  = fmt(results['80'].loanAmount*10000);
+
+      // 以卡片列出三種成數
+      const grid = $('#bDetailGrid');
+      grid.innerHTML = '';
+      Object.entries(results).forEach(([ratio, r])=>{
+        const div = document.createElement('div');
+        div.className = 'kpi';
+        div.innerHTML = `
+          <div class="label"><strong>${ratio}成貸款</strong></div>
+          <div class="value" style="font-size:16px;">
+            總自備款：NT$ ${fmt(r.totalDownPayment*10000)}<br>
+            貸款金額：NT$ ${fmt(r.loanAmount*10000)}<br>
+            每月還款：NT$ ${fmt(r.monthlyPayment)}<br>
+            寬限期月付：NT$ ${fmt(r.gracePayment)}
+          </div>`;
+        grid.appendChild(div);
+      });
+
+      // 顯示區切換
+      $('#placeholder').classList.add('hidden');
+      $('#sellerResults').classList.add('hidden');
+      $('#buyerResults').classList.remove('hidden');
+    }
+
+    /* ==========================
+       賣方計算（房地合一稅 2.0）
+       ========================== */
+    function runSeller(){
+      const saleWan = parseFloat($('#sSalePrice').value);
+      const purchaseWan = parseFloat($('#sPurchasePrice').value);
+      const pDate = $('#sPurchaseDate').value;
+      const sDate = $('#sSaleDate').value;
+
+      if(!saleWan || !purchaseWan || !pDate || !sDate){ alert('請填入所有必要資訊'); return; }
+
+      const salePrice = saleWan * 10000;
+      const purchasePrice = purchaseWan * 10000;
+      const holdingYears = (new Date(sDate) - new Date(pDate)) / (1000*60*60*24*365);
+
+      const isOwner = $('#sOwner').checked;
+      const hasResi = $('#sResidence').checked;
+      const rentedOrBiz = $('#sRented').checked;
+
+      const improve = parseFloat($('#sImprove').value)||0;
+      const lvi = parseFloat($('#sLVI').value)||0;
+      const agentRate = parseFloat($('#sAgentRate').value)||0;
+      const agentFee = salePrice * (agentRate/100);
+      const notary = parseFloat($('#sNotary').value)||0;
+      const contract = parseFloat($('#sContract').value)||0;
+      const stamp = parseFloat($('#sStamp').value)||0;
+      const cert = parseFloat($('#sCert').value)||0;
+      const payoff = parseFloat($('#sPayoff').value)||0;
+      const other = parseFloat($('#sOther').value)||0;
+
+      const relatedFees = agentFee + notary + contract + stamp + cert + improve;
+      const taxable = salePrice - purchasePrice - relatedFees - lvi;
+
+      const qualify = isOwner && hasResi && !rentedOrBiz && holdingYears >= 6;
+      let taxRate = 0, cgt = 0, exemptAmt = 0;
+      if(qualify){
+        if(taxable <= 4_000_000){ cgt = 0; taxRate = 0; exemptAmt = Math.max(0, taxable); }
+        else{ cgt = (taxable - 4_000_000) * 0.10; taxRate = 0.10; exemptAmt = 4_000_000; }
+      }else{
+        if(holdingYears < 2) taxRate = 0.45;
+        else if(holdingYears < 5) taxRate = 0.35;
+        else if(holdingYears < 10) taxRate = 0.20;
+        else taxRate = 0.15;
+        cgt = Math.max(0, taxable * taxRate);
+      }
+
+      const totalFees = agentFee + notary + contract + stamp + cert + payoff + other + cgt;
+      const net = salePrice - totalFees;
+
+      // KPI
+      $('#sHeroNet').textContent = fmt(net);
+      $('#sYears').textContent = (holdingYears).toFixed(1);
+      $('#sRate').textContent = (taxRate*100).toFixed(0) + '%';
+      if(qualify){ $('#sBadge').classList.remove('hidden'); } else { $('#sBadge').classList.add('hidden'); }
+      if(exemptAmt>0){ $('#sExempt').classList.remove('hidden'); $('#sExemptAmt').textContent = fmt(exemptAmt); }
+      else{ $('#sExempt').classList.add('hidden'); }
+
+      // 小卡
+      $('#sSale').textContent = 'NT$ ' + fmt(salePrice);
+      $('#sTaxable').textContent = 'NT$ ' + fmt(taxable);
+      $('#sCGT').textContent = 'NT$ ' + fmt(cgt);
+      $('#sAgent').textContent = 'NT$ ' + fmt(agentFee);
+
+      // 顯示區切換
+      $('#placeholder').classList.add('hidden');
+      $('#buyerResults').classList.add('hidden');
+      $('#sellerResults').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
